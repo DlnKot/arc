@@ -1,0 +1,79 @@
+name: Build Dev Prerelease
+
+on:
+  push:
+    branches:
+      - dev
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        platform: [macos-latest, ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.platform }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.21'
+
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Wails
+        run: go install github.com/wailsapp/wails/v2/cmd/wails@latest
+
+      - name: Get version
+        run: echo "VERSION=$(grep 'AppVersion.*=' internal/config/config.go | cut -d'"' -f2)" >> $GITHUB_ENV
+
+      - name: Build macOS
+        if: matrix.platform == 'macos-latest'
+        run: |
+          wails build -platform=darwin/arm64 -name=ARC-dev
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build Linux
+        if: matrix.platform == 'ubuntu-latest'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.0-dev
+          wails build -platform=linux/amd64 -name=ARC-dev
+
+      - name: Build Windows
+        if: matrix.platform == 'windows-latest'
+        run: wails build -platform=windows/amd64 -name=ARC-dev
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload artifact macOS
+        if: matrix.platform == 'macos-latest'
+        uses: actions/upload-artifact@v4
+        with:
+          name: ARC-dev-macos
+          path: build/bin/ARC-dev-darwin-arm64.tar.gz
+          retention-days: 7
+
+      - name: Upload artifact Linux
+        if: matrix.platform == 'ubuntu-latest'
+        uses: actions/upload-artifact@v4
+        with:
+          name: ARC-dev-linux
+          path: build/bin/ARC-dev-linux-amd64.tar.gz
+          retention-days: 7
+
+      - name: Upload artifact Windows
+        if: matrix.platform == 'windows-latest'
+        uses: actions/upload-artifact@v4
+        with:
+          name: ARC-dev-windows
+          path: build/bin/ARC-dev-windows-amd64.exe
+          retention-days: 7

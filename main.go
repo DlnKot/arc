@@ -2,7 +2,6 @@ package main
 
 import (
 	"embed"
-	"runtime"
 
 	appsvc "github.com/DlnKot/arc/internal/app"
 	"github.com/DlnKot/arc/internal/config"
@@ -14,7 +13,6 @@ import (
 	"github.com/wailsapp/wails/v2"
 	"github.com/wailsapp/wails/v2/pkg/options"
 	"github.com/wailsapp/wails/v2/pkg/options/assetserver"
-	"github.com/wailsapp/wails/v2/pkg/options/mac"
 )
 
 //go:embed all:frontend/dist
@@ -33,7 +31,8 @@ func main() {
 	updaterSvc := updater.New(logger)
 	app := appsvc.New(storeSvc, networkSvc, launcherSvc, updaterSvc, logger)
 
-	appOptions := &options.App{
+	err = wails.Run(&options.App{
+		Title:     config.AppName,
 		Width:     1440,
 		Height:    900,
 		MinWidth:  1180,
@@ -46,18 +45,7 @@ func main() {
 		Bind: []interface{}{
 			app,
 		},
-	}
-
-	if runtime.GOOS == "darwin" {
-		appOptions.Title = config.AppName
-		appOptions.Mac = &mac.Options{
-			TitleBar: mac.TitleBarHidden(),
-		}
-	} else {
-		appOptions.Title = config.AppName
-	}
-
-	err = wails.Run(appOptions)
+	})
 
 	if err != nil {
 		println("Error:", err.Error())
