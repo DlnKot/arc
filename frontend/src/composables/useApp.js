@@ -349,7 +349,9 @@ const updateStatus = ref({
   updateAvailable: false,
   updateDownloaded: false,
   version: null,
-  macReleaseUrl: null
+  releaseUrl: null,
+  downloadUrl: null,
+  installOnQuit: false
 })
 
 const updateProgress = ref({
@@ -363,13 +365,31 @@ const updateError = ref(null)
 
 // Initialize auto-update event listener
 function initAutoUpdater() {
+  // Wails events
+  if (window.api?.onEvent) {
+    window.api.onEvent((event, data) => {
+      switch (event) {
+        case 'updater:progress':
+          updateProgress.value.percent = data
+          break
+        case 'updater:downloaded':
+          updateStatus.value.updateDownloaded = true
+          break
+        case 'updater:error':
+          updateError.value = data
+          break
+      }
+    })
+  }
+
+  // Legacy Electron events (if any)
   if (window.api?.onAutoUpdateEvent) {
     window.api.onAutoUpdateEvent(({ event, data }) => {
       switch (event) {
         case 'update-available':
           updateStatus.value.updateAvailable = true
           updateStatus.value.version = data.version
-          updateStatus.value.macReleaseUrl = data.macReleaseUrl || null
+          updateStatus.value.releaseUrl = data.releaseUrl || null
           break
         case 'download-progress':
           updateProgress.value = data
@@ -377,7 +397,6 @@ function initAutoUpdater() {
         case 'update-downloaded':
           updateStatus.value.updateDownloaded = true
           updateStatus.value.version = data.version
-          updateStatus.value.macReleaseUrl = data.macReleaseUrl || updateStatus.value.macReleaseUrl || null
           break
         case 'update-error':
           updateError.value = data.message
@@ -392,17 +411,19 @@ async function checkForUpdates() {
   updateError.value = null
   try {
     const result = await window.api.checkForUpdates()
-    if (window.api?.log) {
-      window.api.log('info', `checkForUpdates result: ${JSON.stringify(result)}`)
+    const data = unwrapIpc(result)
+    if (data?.updateAvailable) {
+      updateStatus.value.updateAvailable = true
+      updateStatus.value.version = data.version
+      updateStatus.value.downloadUrl = data.downloadUrl
+      updateStatus.value.releaseUrl = data.releaseUrl
+    } else {
+      updateStatus.value.updateAvailable = false
     }
-    if (result?.success === false) updateError.value = result.error || 'Update check failed'
     return result
   } catch (error) {
     const errorMsg = error.message
     updateError.value = errorMsg
-    if (window.api?.log) {
-      window.api.log('error', `checkForUpdates failed: ${errorMsg}`)
-    }
     return { success: false, error: errorMsg }
   }
 }
@@ -410,26 +431,40 @@ async function checkForUpdates() {
 // Download available update
 async function downloadUpdate() {
   updateError.value = null
+  updateProgress.value.percent = 0
   try {
     const result = await window.api.downloadUpdate()
-    if (window.api?.log) {
-      window.api.log('info', `downloadUpdate result: ${JSON.stringify(result)}`)
-    }
     if (result?.success === false) updateError.value = result.error || 'Download failed'
     return result
   } catch (error) {
     const errorMsg = error.message
     updateError.value = errorMsg
-    if (window.api?.log) {
-      window.api.log('error', `downloadUpdate failed: ${errorMsg}`)
-    }
     return { success: false, error: errorMsg }
   }
 }
 
-// Install downloaded update and restart
-function installUpdate() {
-  window.api.installUpdate()
+// Install downloaded update now
+function installNow() {
+  window.api.installNow()
+}
+
+// Install on quit (Windows/macOS)
+async function installOnQuit() {
+  try {
+    await window.api.installOnQuit()
+    updateStatus.value.installOnQuit = true
+  } catch (error) {
+    updateError.value = error.message
+  }
+}
+
+// Cancel download
+async function cancelDownload() {
+  try {
+    await window.api.cancelDownload()
+  } catch (error) {
+    // Ignore
+  }
 }
 
 /* ---------------- EXPORT ---------------- */
@@ -463,6 +498,8 @@ export function useApp() {
     initAutoUpdater,
     checkForUpdates,
     downloadUpdate,
-    installUpdate
+    installNow,
+    installOnQuit,
+    cancelDownload
   }
 }

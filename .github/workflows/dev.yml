@@ -10,10 +10,7 @@ permissions:
 
 jobs:
   build:
-    strategy:
-      matrix:
-        platform: [macos-latest, windows-latest]
-    runs-on: ${{ matrix.platform }}
+    runs-on: macos-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -35,25 +32,70 @@ jobs:
         run: echo "VERSION=$(grep 'AppVersion.*=' internal/config/config.go | cut -d'"' -f2)" >> $GITHUB_ENV
 
       - name: Build macOS
-        if: matrix.platform == 'macos-latest'
         run: wails build -platform=darwin/arm64
 
+      - name: Upload macOS artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: arc-macos
+          path: build/bin/ARC-darwin-arm64.tar.gz
+
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.21'
+
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Wails
+        run: go install github.com/wailsapp/wails/v2/cmd/wails@latest
+
       - name: Build Windows
-        if: matrix.platform == 'windows-latest'
         run: wails build -platform=windows/amd64
 
-      - name: Upload artifact macOS
-        if: matrix.platform == 'macos-latest'
+      - name: Upload Windows artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ARC-dev-macos
-          path: build/bin/ARC-darwin-arm64.tar.gz
-          retention-days: 7
-
-      - name: Upload artifact Windows
-        if: matrix.platform == 'windows-latest'
-        uses: actions/upload-artifact@v4
-        with:
-          name: ARC-dev-windows
+          name: arc-windows
           path: build/bin/ARC-windows-amd64.exe
-          retention-days: 7
+
+  release:
+    needs: [build, build-windows]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download macOS artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: arc-macos
+          path: dist
+
+      - name: Download Windows artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: arc-windows
+          path: dist
+
+      - name: Get version
+        run: echo "VERSION=$(grep 'AppVersion.*=' internal/config/config.go | cut -d'"' -f2)" >> $GITHUB_ENV
+
+      - name: Create GitHub Prerelease
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: dev-${{ env.VERSION }}
+          name: Dev Build v${{ env.VERSION }}
+          draft: false
+          prerelease: true
+          files: |
+            dist/ARC-darwin-arm64.tar.gz
+            dist/ARC-windows-amd64.exe
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

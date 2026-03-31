@@ -411,8 +411,7 @@
               <div class="progress-bar">
                 <div class="progress-fill" :style="{ width: updateProgress.percent + '%' }"></div>
               </div>
-              <span class="progress-text">{{ updateProgress.percent.toFixed(1) }}% ({{
-                formatBytes(updateProgress.bytesPerSecond) }}/с)</span>
+              <span class="progress-text">{{ updateProgress.percent.toFixed(0) }}%</span>
             </div>
 
             <button class="btn btn-primary" @click="handleDownloadUpdate" :disabled="isDownloading">
@@ -425,9 +424,14 @@
               <span class="update-label">Обновление готово:</span>
               <span class="update-value version-ready">{{ updateStatus.version }}</span>
             </div>
-            <button class="btn btn-primary" @click="handleInstallUpdate">
-              Перезагрузить и установить
-            </button>
+            <div class="update-actions">
+              <button class="btn btn-primary" @click="handleInstallNow">
+                Установить сейчас
+              </button>
+              <button class="btn btn-secondary" @click="handleInstallOnQuit" :class="{ active: isInstallOnQuit }">
+                {{ isInstallOnQuit ? '✓ Установить при выходе' : 'Установить при выходе' }}
+              </button>
+            </div>
           </div>
 
           <div v-else class="update-check">
@@ -441,18 +445,16 @@
           </div>
         </div>
 
-        <div class="form-group update-dev-toggle">
-          <label for="updates-use-github">Обновления через GitHub</label>
+        <div class="form-group">
+          <label for="updates-auto-check">Автоматически проверять обновления при запуске</label>
           <label class="toggle">
-            <input type="checkbox" id="updates-use-github" v-model="localSettings.updates.useGithub">
+            <input type="checkbox" id="updates-auto-check" v-model="localSettings.updates.autoCheck">
             <span class="toggle-slider"></span>
           </label>
-          <small>Если включено, проверка обновлений идет через GitHub Releases. Если выключено — через внутренний сервер.</small>
         </div>
 
         <div class="update-info-text">
-          <p>После загрузки обновления приложение будет перезапущено для
-            установки.</p>
+          <p>После загрузки обновления приложение будет перезапущено для установки.</p>
         </div>
       </div>
     </div>
@@ -485,11 +487,13 @@ const {
   initAutoUpdater,
   checkForUpdates,
   downloadUpdate,
-  installUpdate
+  installNow,
+  installOnQuit
 } = useApp()
 
 const isChecking = ref(false)
 const isDownloading = ref(false)
+const isInstallOnQuit = ref(false)
 const appVersion = ref(versionData.version)
 const isMac = ref(false)
 
@@ -542,8 +546,15 @@ async function handleDownloadUpdate() {
   }
 }
 
-function handleInstallUpdate() {
-  installUpdate()
+function handleInstallNow() {
+  installNow()
+}
+
+async function handleInstallOnQuit() {
+  isInstallOnQuit.value = !isInstallOnQuit.value
+  if (isInstallOnQuit.value) {
+    await installOnQuit()
+  }
 }
 
 async function handleOpenMacInstaller() {
@@ -647,7 +658,9 @@ const defaultSettings = {
     startMinimized: false
   },
   updates: {
-    useGithub: false
+    useGithub: false,
+    autoCheck: true,
+    installOnQuit: false
   },
   networkCheck: {
     latencyThresholdMs: 100
@@ -995,6 +1008,17 @@ function saveSettings() {
 .update-ready,
 .update-check {
   margin-top: 16px;
+}
+
+.update-actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.update-actions .btn.active {
+  background: #22c55e;
+  border-color: #22c55e;
 }
 
 .update-progress {

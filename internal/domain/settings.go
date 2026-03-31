@@ -75,6 +75,8 @@ type NetworkCheckSettings struct {
 type UpdatesSettings struct {
 	UseGithub         bool   `json:"useGithub"`
 	InternalServerURL string `json:"internalServerUrl"`
+	AutoCheck         bool   `json:"autoCheck"`
+	InstallOnQuit     bool   `json:"installOnQuit"`
 }
 
 type Settings struct {
@@ -136,6 +138,8 @@ func DefaultSettings() Settings {
 		Updates: UpdatesSettings{
 			UseGithub:         false,
 			InternalServerURL: "http://10.230.121.212",
+			AutoCheck:         true,
+			InstallOnQuit:     false,
 		},
 	}
 }
@@ -205,6 +209,8 @@ func (s Settings) ToMap() map[string]any {
 		"updates": map[string]any{
 			"useGithub":         s.Updates.UseGithub,
 			"internalServerUrl": s.Updates.InternalServerURL,
+			"autoCheck":         s.Updates.AutoCheck,
+			"installOnQuit":     s.Updates.InstallOnQuit,
 		},
 	}
 }
@@ -368,6 +374,12 @@ func SettingsFromMap(m map[string]any) Settings {
 		}
 		if v, ok := updates["internalServerUrl"].(string); ok {
 			s.Updates.InternalServerURL = v
+		}
+		if v, ok := updates["autoCheck"].(bool); ok {
+			s.Updates.AutoCheck = v
+		}
+		if v, ok := updates["installOnQuit"].(bool); ok {
+			s.Updates.InstallOnQuit = v
 		}
 	}
 

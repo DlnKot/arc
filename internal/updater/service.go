@@ -7,13 +7,16 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"runtime"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/DlnKot/arc/internal/config"
 	"github.com/DlnKot/arc/internal/logging"
+	wailsruntime "github.com/wailsapp/wails/v2/pkg/runtime"
 )
 
 const (
@@ -36,14 +39,20 @@ func logInfo(format string, args ...any) {
 }
 
 type Service struct {
-	logger logging.Logger
-	status Status
+	logger   logging.Logger
+	ctx      context.Context
+	mu       sync.Mutex
+	status   Status
+	progress int
+	cancelCh chan struct{}
 }
 
 type UpdateInfo struct {
 	Version     string `json:"version"`
 	URL         string `json:"url"`
+	SHA256      string `json:"sha256,omitempty"`
 	Description string `json:"description,omitempty"`
+	ReleaseDate string `json:"releaseDate,omitempty"`
 }
 
 type Status struct {
@@ -52,14 +61,24 @@ type Status struct {
 	Version          string `json:"version"`
 	ReleaseURL       string `json:"releaseUrl,omitempty"`
 	DownloadURL      string `json:"downloadUrl,omitempty"`
+	InstallOnQuit    bool   `json:"installOnQuit"`
 }
 
 func New(logger logging.Logger) *Service {
 	setLogger(logger)
-	return &Service{logger: logger}
+	return &Service{
+		cancelCh: make(chan struct{}, 1),
+	}
+}
+
+func (s *Service) SetContext(ctx context.Context) {
+	s.ctx = ctx
 }
 
 func (s *Service) CheckForUpdates(useGithub bool, internalServerURL string) (map[string]any, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
 	currentVersion := config.AppVersion
 	logInfo("checking for updates, current version: %s", currentVersion)
 
@@ -235,11 +254,16 @@ func isNewerVersion(current, latest string) bool {
 }
 
 func (s *Service) DownloadUpdate() error {
+	s.mu.Lock()
 	if s.status.DownloadURL == "" {
+		s.mu.Unlock()
 		return fmt.Errorf("no update available")
 	}
+	downloadURL := s.status.DownloadURL
+	s.progress = 0
+	s.mu.Unlock()
 
-	logInfo("downloading update from: %s", s.status.DownloadURL)
+	logInfo("downloading update from: %s", downloadURL)
 
 	downloadPath := filepath.Join(os.TempDir(), "arc-update")
 	if runtime.GOOS == "windows" {
@@ -249,38 +273,87 @@ func (s *Service) DownloadUpdate() error {
 	}
 
 	client := &http.Client{Timeout: 120 * time.Second}
-	resp, err := client.Get(s.status.DownloadURL)
+	resp, err := client.Get(downloadURL)
 	if err != nil {
+		s.emitEvent("updater:error", "Download failed: "+err.Error())
 		return fmt.Errorf("download failed: %w", err)
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
+		s.emitEvent("updater:error", fmt.Sprintf("Download returned %d", resp.StatusCode))
 		return fmt.Errorf("download returned %d", resp.StatusCode)
 	}
 
 	file, err := os.Create(downloadPath)
 	if err != nil {
+		s.emitEvent("updater:error", "Create file failed: "+err.Error())
 		return fmt.Errorf("create file failed: %w", err)
 	}
 	defer file.Close()
 
-	if _, err := io.Copy(file, resp.Body); err != nil {
-		return fmt.Errorf("write failed: %w", err)
+	totalSize := resp.ContentLength
+	downloaded := int64(0)
+
+	buffer := make([]byte, 32*1024)
+	for {
+		select {
+		case <-s.cancelCh:
+			file.Close()
+			os.Remove(downloadPath)
+			s.emitEvent("updater:error", "Download cancelled")
+			return fmt.Errorf("download cancelled")
+		default:
+		}
+
+		n, err := resp.Body.Read(buffer)
+		if n > 0 {
+			if _, werr := file.Write(buffer[:n]); werr != nil {
+				s.emitEvent("updater:error", "Write failed: "+werr.Error())
+				return fmt.Errorf("write failed: %w", werr)
+			}
+			downloaded += int64(n)
+			if totalSize > 0 {
+				progress := int(float64(downloaded) / float64(totalSize) * 100)
+				s.mu.Lock()
+				s.progress = progress
+				s.mu.Unlock()
+				s.emitEvent("updater:progress", progress)
+			}
+		}
+		if err != nil {
+			break
+		}
 	}
 
+	s.mu.Lock()
 	s.status.UpdateDownloaded = true
+	s.mu.Unlock()
+
+	s.emitEvent("updater:downloaded", downloadPath)
 	logInfo("update downloaded to: %s", downloadPath)
 
 	return nil
 }
 
-func (s *Service) InstallUpdate() error {
+func (s *Service) CancelDownload() error {
+	select {
+	case s.cancelCh <- struct{}{}:
+		return nil
+	default:
+		return fmt.Errorf("no download in progress")
+	}
+}
+
+func (s *Service) InstallNow() error {
+	s.mu.Lock()
 	if !s.status.UpdateDownloaded {
+		s.mu.Unlock()
 		return fmt.Errorf("update not downloaded")
 	}
+	s.mu.Unlock()
 
-	logInfo("installing update...")
+	logInfo("installing update now...")
 
 	downloadPath := filepath.Join(os.TempDir(), "arc-update")
 	if runtime.GOOS == "windows" {
@@ -293,18 +366,78 @@ func (s *Service) InstallUpdate() error {
 		os.Exit(0)
 	} else if runtime.GOOS == "darwin" {
 		downloadPath += ".dmg"
-		return fmt.Errorf("macOS update requires manual install: %s", downloadPath)
+		if err := runCommand("open", downloadPath); err != nil {
+			return fmt.Errorf("failed to open dmg: %w", err)
+		}
+		os.Exit(0)
 	}
 
 	return fmt.Errorf("unsupported platform")
 }
 
+func (s *Service) InstallOnQuit() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	if !s.status.UpdateDownloaded {
+		return fmt.Errorf("update not downloaded")
+	}
+
+	s.status.InstallOnQuit = true
+	logInfo("will install on quit")
+
+	return nil
+}
+
+func (s *Service) CheckAndInstallOnQuit() {
+	s.mu.Lock()
+	shouldInstall := s.status.InstallOnQuit && s.status.UpdateDownloaded
+	s.mu.Unlock()
+
+	if !shouldInstall {
+		return
+	}
+
+	logInfo("installing on quit...")
+
+	downloadPath := filepath.Join(os.TempDir(), "arc-update")
+	if runtime.GOOS == "windows" {
+		downloadPath += ".exe"
+		_, err := os.Stat(downloadPath)
+		if err == nil {
+			_, _ = os.StartProcess(downloadPath, []string{}, &os.ProcAttr{})
+		}
+	} else if runtime.GOOS == "darwin" {
+		downloadPath += ".dmg"
+		_, err := os.Stat(downloadPath)
+		if err == nil {
+			_ = runCommand("open", downloadPath)
+		}
+	}
+}
+
 func (s *Service) GetStatus() map[string]any {
+	s.mu.Lock()
+	defer s.mu.Unlock()
 	return map[string]any{
 		"updateAvailable":  s.status.UpdateAvailable,
 		"updateDownloaded": s.status.UpdateDownloaded,
 		"version":          s.status.Version,
 		"releaseUrl":       s.status.ReleaseURL,
 		"downloadUrl":      s.status.DownloadURL,
+		"installOnQuit":    s.status.InstallOnQuit,
+		"progress":         s.progress,
 	}
+}
+
+func (s *Service) emitEvent(name string, data any) {
+	if s.ctx == nil {
+		return
+	}
+	wailsruntime.EventsEmit(s.ctx, name, data)
+}
+
+func runCommand(name string, args ...string) error {
+	cmd := exec.Command(name, args...)
+	return cmd.Start()
 }

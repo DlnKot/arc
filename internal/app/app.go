@@ -4,6 +4,7 @@ import (
 	"context"
 	"runtime"
 	"strings"
+	"time"
 
 	"github.com/DlnKot/arc/internal/config"
 	"github.com/DlnKot/arc/internal/domain"
@@ -40,6 +41,26 @@ func (a *App) Startup(ctx context.Context) {
 			a.logger.Errorf("startup loadStore error: %v", err)
 		}
 	}
+
+	a.updater.SetContext(ctx)
+
+	go func() {
+		time.Sleep(3 * time.Second)
+		settings := a.store.GetSettings()
+		if updates, ok := settings["updates"].(map[string]any); ok {
+			if autoCheck, ok := updates["autoCheck"].(bool); ok && autoCheck {
+				useGithub := false
+				internalURL := "http://10.230.121.212"
+				if v, ok := updates["useGithub"].(bool); ok {
+					useGithub = v
+				}
+				if v, ok := updates["internalServerUrl"].(string); ok && v != "" {
+					internalURL = v
+				}
+				a.updater.CheckForUpdates(useGithub, internalURL)
+			}
+		}
+	}()
 }
 
 func (a *App) GetConnections() domain.Result[[]map[string]any] {
@@ -150,11 +171,29 @@ func (a *App) DownloadUpdate() domain.Result[bool] {
 	return ok(true)
 }
 
-func (a *App) InstallUpdate() domain.Result[bool] {
-	if err := a.updater.InstallUpdate(); err != nil {
+func (a *App) CancelDownload() domain.Result[bool] {
+	if err := a.updater.CancelDownload(); err != nil {
 		return fail[bool](err)
 	}
 	return ok(true)
+}
+
+func (a *App) InstallNow() domain.Result[bool] {
+	if err := a.updater.InstallNow(); err != nil {
+		return fail[bool](err)
+	}
+	return ok(true)
+}
+
+func (a *App) InstallOnQuit() domain.Result[bool] {
+	if err := a.updater.InstallOnQuit(); err != nil {
+		return fail[bool](err)
+	}
+	return ok(true)
+}
+
+func (a *App) Shutdown(ctx context.Context) {
+	a.updater.CheckAndInstallOnQuit()
 }
 
 func (a *App) GetUpdateStatus() domain.Result[map[string]any] {
