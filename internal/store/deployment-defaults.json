@@ -1,0 +1,70 @@
+{
+  "settings": {
+    "horizon": {
+      "appName": "",
+      "desktopProtocol": "",
+      "desktopLayout": "",
+      "monitors": "",
+      "unattended": true,
+      "nonInteractive": false,
+      "launchMinimized": false,
+      "loginAsCurrentUser": true,
+      "hideClientAfterLaunchSession": false,
+      "useExisting": false,
+      "singleAutoConnect": false,
+      "customPath": "",
+      "customFlags": ""
+    },
+    "citrix": {
+      "accountName": "VDI Apps",
+      "resourceName": "",
+      "customPath": "",
+      "customFlags": ""
+    }
+  },
+  "connections": [
+    {
+      "factoryId": "factory-horizon-vdi",
+      "type": "horizon",
+      "name": "VDI",
+      "host": "https://telework.alfabank.ru",
+      "desktopPool": "workspace-fullwm",
+      "description": "Основное подключение VMware Horizon",
+      "defaultSettings": {
+        "loginAsCurrentUser": true,
+        "unattended": true
+      }
+    },
+    {
+      "factoryId": "factory-horizon-vdi-backup",
+      "type": "horizon",
+      "name": "VDI (резерв)",
+      "host": "https://telework.moscow.alfaintra.net",
+      "desktopPool": "workspace-fullwm",
+      "description": "Резервное подключение VMware Horizon",
+      "defaultSettings": {
+        "loginAsCurrentUser": true,
+        "unattended": true
+      }
+    },
+    {
+      "factoryId": "factory-citrix-vdi-apps",
+      "type": "citrix",
+      "name": "Citrix VDI Apps",
+      "host": "sf-vdi.moscow.alfaintra.net",
+      "storeUrl": "https://sf-vdi.moscow.alfaintra.net/Citrix/VDI-Apps/discovery",
+      "description": "Каталог приложений Citrix",
+      "defaultSettings": {
+        "accountName": "VDI Apps",
+        "resourceName": ""
+      }
+    },
+    {
+      "factoryId": "factory-rdp-purms",
+      "type": "rdp",
+      "name": "ПУРМС",
+      "host": "mypc.moscow.alfaintra.net",
+      "description": "Преднастроенное RDP подключение к ПУРМС"
+    }
+  ]
+}

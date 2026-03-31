@@ -1,0 +1,250 @@
+/* ==================== Global CSS Variables ==================== */
+:root {
+  /* Theme (light by default). Use [data-theme="dark"] overrides below. */
+  color-scheme: light;
+  --bg-primary: #f2f3f5;        /* window */
+  --bg-secondary: #ffffff;      /* panels */
+  --bg-tertiary: #1f2937;       /* strong surface (chips/active/hover) */
+  --bg-hover: #111827;          /* stronger hover */
+
+  --accent-primary: #dbdde1;
+  --accent-primary-hover: #2563eb;
+  --accent-success: #10b981;
+  --accent-warning: #f59e0b;
+  --accent-danger: #ef4444;
+  
+  --text-primary: #0b1220;
+  --text-secondary: #3f4a5e;
+  --text-muted: #6b7280;
+  --text-inverse: #ffffff;
+  
+  --border-color: rgba(17, 24, 39, 0.14);
+  --border-light: rgba(17, 24, 39, 0.22);
+  
+  --shadow: 0 6px 18px rgba(17, 24, 39, 0.10);
+  --shadow-lg: 0 14px 38px rgba(17, 24, 39, 0.14);
+  
+  --radius: 8px;
+  --radius-sm: 6px;
+  --radius-lg: 12px;
+  --radius-xl: 25px;
+  
+  --transition: 150ms ease;
+  
+  --sidebar-width: 220px;
+}
+
+/* ==================== Fonts ==================== */
+@font-face {
+  font-family: "Styrene A Web";
+  src: url("./assets/fonts/styrene-a/StyreneAWeb-Regular.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Styrene A Web";
+  src: url("./assets/fonts/styrene-a/StyreneAWeb-Italic.woff2") format("woff2");
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Styrene A Web";
+  src: url("./assets/fonts/styrene-a/StyreneAWeb-Medium.woff2") format("woff2");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Styrene A Web";
+  src: url("./assets/fonts/styrene-a/StyreneAWeb-MediumItalic.woff2") format("woff2");
+  font-weight: 500;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Styrene A Web";
+  src: url("./assets/fonts/styrene-a/StyreneAWeb-Bold.woff2") format("woff2");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Styrene A Web";
+  src: url("./assets/fonts/styrene-a/StyreneAWeb-BoldItalic.woff2") format("woff2");
+  font-weight: 700;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Styrene A Web";
+  src: url("./assets/fonts/styrene-a/StyreneAWeb-Light.woff2") format("woff2");
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Styrene A Web";
+  src: url("./assets/fonts/styrene-a/StyreneAWeb-LightItalic.woff2") format("woff2");
+  font-weight: 300;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Styrene A Web";
+  src: url("./assets/fonts/styrene-a/StyreneAWeb-Black.woff2") format("woff2");
+  font-weight: 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Styrene A Web";
+  src: url("./assets/fonts/styrene-a/StyreneAWeb-BlackItalic.woff2") format("woff2");
+  font-weight: 900;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Styrene A Web";
+  src: url("./assets/fonts/styrene-a/StyreneAWeb-Thin.woff2") format("woff2");
+  font-weight: 100;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Styrene A Web";
+  src: url("./assets/fonts/styrene-a/StyreneAWeb-ThinItalic.woff2") format("woff2");
+  font-weight: 100;
+  font-style: italic;
+  font-display: swap;
+}
+
+/* Dark theme */
+html[data-theme="dark"] {
+  color-scheme: dark;
+  /* Deeper charcoal palette (less blue tint) */
+  --bg-primary: #0b0d10;
+  --bg-secondary: #111318;
+  --bg-tertiary: #1b1f27;
+  --bg-hover: #242a35;
+
+  --text-primary: #e7eaf0;
+  --text-secondary: #c6cddd;
+  --text-muted: #8e97aa;
+  --text-inverse: #ffffff;
+
+  --border-color: rgba(255, 255, 255, 0.12);
+  --border-light: rgba(255, 255, 255, 0.18);
+
+  --shadow: 0 10px 22px rgba(0, 0, 0, 0.35);
+  --shadow-lg: 0 18px 44px rgba(0, 0, 0, 0.45);
+}
+
+/* ==================== Reset & Base ==================== */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+button {
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+html, body, #app {
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+}
+
+body {
+  font-family: "Styrene A Web", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--text-primary);
+  background-color: var(--bg-primary);
+}
+
+/* ==================== Scrollbar ==================== */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-primary);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--bg-tertiary);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--bg-hover);
+}
+
+/* ==================== Animations ==================== */
+@keyframes modalSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes toastSlideIn {
+  from {
+    opacity: 0;
+    transform: translateX(100px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* ==================== Toast (global) ==================== */
+.toast {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  padding: 14px 20px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-lg);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  z-index: 2000;
+  animation: toastSlideIn 300ms ease;
+}
+
+.toast.success {
+  border-left: 3px solid var(--accent-success);
+}
+
+.toast.error {
+  border-left: 3px solid var(--accent-danger);
+}
+
+.toast-message {
+  font-size: 14px;
+}
