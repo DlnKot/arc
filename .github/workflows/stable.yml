@@ -72,17 +72,13 @@ jobs:
     needs: [build-macos, build-windows]
     runs-on: macos-latest
     steps:
-      - name: Download macOS artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: arc-macos
-          path: dist
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-      - name: Download Windows artifact
+      - name: Download all artifacts
         uses: actions/download-artifact@v4
         with:
-          name: arc-windows
-          path: dist
+          path: artifacts
 
       - name: Get version
         run: echo "VERSION=$(grep 'AppVersion.*=' internal/config/config.go | cut -d'"' -f2)" >> $GITHUB_ENV
@@ -95,7 +91,7 @@ jobs:
           draft: false
           prerelease: false
           files: |
-            dist/ARC-darwin-arm64.tar.gz
-            dist/ARC-windows-amd64.exe
+            artifacts/ARC-darwin-arm64.tar.gz
+            artifacts/ARC-windows-amd64.exe
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
