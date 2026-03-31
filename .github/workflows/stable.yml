@@ -30,15 +30,20 @@ jobs:
 
       - name: Get version
         run: echo "VERSION=$(grep 'AppVersion.*=' internal/config/config.go | cut -d'"' -f2)" >> $GITHUB_ENV
+        shell: bash
 
       - name: Build macOS
         run: wails build -platform=darwin/arm64
+
+      - name: Create DMG
+        run: |
+          hdiutil create -volname "AlfaRemoteClient-$VERSION" -srcfolder build/bin/AlfaRemoteClient.app -ov -dynamicpath "ARC-$VERSION.dmg" "ARC-$VERSION.dmg"
 
       - name: Upload macOS artifact
         uses: actions/upload-artifact@v4
         with:
           name: arc-macos
-          path: build/bin/ARC-darwin-arm64.tar.gz
+          path: ARC-${{ env.VERSION }}.dmg
 
   build-windows:
     runs-on: windows-latest
@@ -59,14 +64,22 @@ jobs:
       - name: Install Wails
         run: go install github.com/wailsapp/wails/v2/cmd/wails@latest
 
+      - name: Get version
+        run: echo "VERSION=$(grep 'AppVersion.*=' internal/config/config.go | cut -d'"' -f2)" >> $GITHUB_ENV
+
       - name: Build Windows
         run: wails build -platform=windows/amd64
+
+      - name: Rename Windows artifact
+        run: |
+          $version = "$env:VERSION"
+          Copy-Item "build\bin\ARC-windows-amd64.exe" "ARC-$version.exe"
 
       - name: Upload Windows artifact
         uses: actions/upload-artifact@v4
         with:
           name: arc-windows
-          path: build/bin/ARC-windows-amd64.exe
+          path: ARC-${{ env.VERSION }}.exe
 
   release:
     needs: [build-macos, build-windows]
@@ -75,13 +88,14 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Get version
+        run: echo "VERSION=$(grep 'AppVersion.*=' internal/config/config.go | cut -d'"' -f2)" >> $GITHUB_ENV
+
       - name: Download all artifacts
         uses: actions/download-artifact@v4
         with:
           path: artifacts
-
-      - name: Get version
-        run: echo "VERSION=$(grep 'AppVersion.*=' internal/config/config.go | cut -d'"' -f2)" >> $GITHUB_ENV
+          merge-multiple: true
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v1
@@ -91,7 +105,7 @@ jobs:
           draft: false
           prerelease: false
           files: |
-            artifacts/ARC-darwin-arm64.tar.gz
-            artifacts/ARC-windows-amd64.exe
+            artifacts/ARC-${{ env.VERSION }}.dmg
+            artifacts/ARC-${{ env.VERSION }}.exe
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
