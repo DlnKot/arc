@@ -37,7 +37,7 @@ jobs:
 
       - name: Create DMG
         run: |
-          hdiutil create -volname "AlfaRemoteClient-$VERSION" -srcfolder build/bin/AlfaRemoteClient.app -ov -dynamicpath "ARC-$VERSION.dmg" "ARC-$VERSION.dmg"
+          hdiutil create -volname "AlfaRemoteClient-$VERSION" -srcfolder build/bin/AlfaRemoteClient.app -ov -format UDZO "ARC-$VERSION.dmg"
 
       - name: Upload macOS artifact
         uses: actions/upload-artifact@v4
