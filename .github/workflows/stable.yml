@@ -30,14 +30,19 @@ jobs:
 
       - name: Get version
         run: echo "VERSION=$(grep 'AppVersion.*=' internal/config/config.go | cut -d'"' -f2)" >> $GITHUB_ENV
-        shell: bash
 
       - name: Build macOS
         run: wails build -platform=darwin/arm64
 
-      - name: Create DMG
+      - name: Prepare DMG folder
         run: |
-          hdiutil create -volname "AlfaRemoteClient-$VERSION" -srcfolder build/bin/AlfaRemoteClient.app -ov -format UDZO "ARC-$VERSION.dmg"
+          mkdir -p dmg-staging
+          cp -R build/bin/AlfaRemoteClient.app dmg-staging/
+          ln -s /Applications dmg-staging/Applications
+
+      - name: Create DMG with Applications symlink
+        run: |
+          hdiutil create -volname "AlfaRemoteClient-$VERSION" -srcfolder dmg-staging -ov -format UDZO "ARC-$VERSION.dmg"
 
       - name: Upload macOS artifact
         uses: actions/upload-artifact@v4
@@ -65,7 +70,9 @@ jobs:
         run: go install github.com/wailsapp/wails/v2/cmd/wails@latest
 
       - name: Get version
-        run: echo "VERSION=$(grep 'AppVersion.*=' internal/config/config.go | cut -d'"' -f2)" >> $GITHUB_ENV
+        run: |
+          $version = (Get-Content internal/config/config.go | Select-String 'AppVersion.*=' | ForEach-Object { ($_ -split '"')[1] })
+          echo "VERSION=$version" >> $env:GITHUB_ENV
 
       - name: Build Windows
         run: wails build -platform=windows/amd64
@@ -95,6 +102,9 @@ jobs:
         with:
           path: artifacts
           merge-multiple: true
+
+      - name: List artifacts
+        run: ls -la artifacts/
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v1
