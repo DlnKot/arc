@@ -33,7 +33,6 @@ jobs:
 
       - name: Get version
         run: echo "VERSION=$(grep 'AppVersion.*=' internal/config/config.go | cut -d'"' -f2)" >> $GITHUB_ENV
-        shell: bash
 
       - name: Build macOS
         if: matrix.platform == 'macos-latest'
@@ -43,20 +42,18 @@ jobs:
         if: matrix.platform == 'windows-latest'
         run: wails build -platform=windows/amd64
 
-      - name: Upload Release Asset macOS
+      - name: Upload artifact macOS
         if: matrix.platform == 'macos-latest'
-        uses: softprops/action-gh-release@v1
+        uses: actions/upload-artifact@v4
         with:
-          tag_name: v${{ env.VERSION }}
-          file: build/bin/ARC-darwin-arm64.tar.gz
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          name: ARC-stable-macos
+          path: build/bin/ARC-darwin-arm64.tar.gz
+          retention-days: 30
 
-      - name: Upload Release Asset Windows
+      - name: Upload artifact Windows
         if: matrix.platform == 'windows-latest'
-        uses: softprops/action-gh-release@v1
+        uses: actions/upload-artifact@v4
         with:
-          tag_name: v${{ env.VERSION }}
-          file: build/bin/ARC-windows-amd64.exe
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          name: ARC-stable-windows
+          path: build/bin/ARC-windows-amd64.exe
+          retention-days: 30
