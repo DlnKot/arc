@@ -9,7 +9,7 @@ permissions:
   contents: write
 
 jobs:
-  build:
+  build-macos:
     runs-on: macos-latest
     steps:
       - name: Checkout code
@@ -69,8 +69,8 @@ jobs:
           path: build/bin/ARC-windows-amd64.exe
 
   release:
-    needs: [build, build-windows]
-    runs-on: ubuntu-latest
+    needs: [build-macos, build-windows]
+    runs-on: macos-latest
     steps:
       - name: Download macOS artifact
         uses: actions/download-artifact@v4
