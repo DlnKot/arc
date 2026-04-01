@@ -1,7 +1,7 @@
 !define INFO_PROJECTNAME "ARC"
 !define INFO_COMPANYNAME "DlnKot"
 !define INFO_PRODUCTNAME "Alfa Remote Client"
-!define INFO_PRODUCTVERSION "VERSION"
+!define INFO_PRODUCTVERSION "VER"
 !define INFO_COPYRIGHT "Copyright 2025 DlnKot"
 !define PRODUCT_EXECUTABLE "ARC.exe"
 !define UNINST_KEY_NAME "DlnKotAlfaRemoteClient"
@@ -9,14 +9,14 @@
 Unicode true
 !include "MUI.nsh"
 
-VIProductVersion "${INFO_PRODUCTVERSION}.0"
-VIFileVersion "${INFO_PRODUCTVERSION}.0"
-VIAddVersionKey "CompanyName" "${INFO_COMPANYNAME}"
-VIAddVersionKey "FileDescription" "${INFO_PRODUCTNAME} Installer"
-VIAddVersionKey "ProductVersion" "${INFO_PRODUCTVERSION}"
-VIAddVersionKey "FileVersion" "${INFO_PRODUCTVERSION}"
-VIAddVersionKey "LegalCopyright" "${INFO_COPYRIGHT}"
-VIAddVersionKey "ProductName" "${INFO_PRODUCTNAME}"
+VIProductVersion "VER.0"
+VIFileVersion "VER.0"
+VIAddVersionKey "CompanyName" "DlnKot"
+VIAddVersionKey "FileDescription" "Alfa Remote Client Installer"
+VIAddVersionKey "ProductVersion" "VER"
+VIAddVersionKey "FileVersion" "VER"
+VIAddVersionKey "LegalCopyright" "Copyright 2025 DlnKot"
+VIAddVersionKey "ProductName" "Alfa Remote Client"
 
 ManifestDPIAware true
 !define MUI_ICON "..\icon.ico"
@@ -29,12 +29,12 @@ ManifestDPIAware true
 !insertmacro MUI_UNPAGE_INSTFILES
 !insertmacro MUI_LANGUAGE "Russian"
 
-Name "${INFO_PRODUCTNAME}"
-OutFile "..\..\bin\ARC-VERSION-installer.exe"
+Name "Alfa Remote Client"
+OutFile "..\..\bin\ARC-VER-installer.exe"
 InstallDir "$LOCALAPPDATA\Alfa Remote Client"
 ShowInstDetails show
 
-Section "!${INFO_PRODUCTNAME}" SecMain
+Section "!Alfa Remote Client" SecMain
 SetOutPath $INSTDIR
 File "..\..\bin\ARC.exe"
 WriteUninstaller "$INSTDIR\Uninstall.exe"
@@ -44,14 +44,14 @@ CreateShortcut "$SMPROGRAMS\Alfa Remote Client\Удалить.lnk" "$INSTDIR\Uni
 IfFileExists "$DESKTOP\Alfa Remote Client.lnk" skip_desktop
 CreateShortcut "$DESKTOP\Alfa Remote Client.lnk" "$INSTDIR\ARC.exe"
 skip_desktop:
-WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\${UNINST_KEY_NAME}" "DisplayName" "${INFO_PRODUCTNAME}"
-WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\${UNINST_KEY_NAME}" "UninstallString" "msiexec /x$INSTDIR\Uninstall.exe"
-WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\${UNINST_KEY_NAME}" "InstallLocation" "$INSTDIR"
-WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\${UNINST_KEY_NAME}" "DisplayIcon" "$INSTDIR\ARC.exe"
-WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\${UNINST_KEY_NAME}" "Publisher" "${INFO_COMPANYNAME}"
-WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\${UNINST_KEY_NAME}" "DisplayVersion" "${INFO_PRODUCTVERSION}"
-WriteRegDWORD HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\${UNINST_KEY_NAME}" "NoModify" 1
-WriteRegDWORD HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\${UNINST_KEY_NAME}" "NoRepair" 1
+WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\DlnKotAlfaRemoteClient" "DisplayName" "Alfa Remote Client"
+WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\DlnKotAlfaRemoteClient" "UninstallString" "msiexec /x$INSTDIR\Uninstall.exe"
+WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\DlnKotAlfaRemoteClient" "InstallLocation" "$INSTDIR"
+WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\DlnKotAlfaRemoteClient" "DisplayIcon" "$INSTDIR\ARC.exe"
+WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\DlnKotAlfaRemoteClient" "Publisher" "DlnKot"
+WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\DlnKotAlfaRemoteClient" "DisplayVersion" "VER"
+WriteRegDWORD HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\DlnKotAlfaRemoteClient" "NoModify" 1
+WriteRegDWORD HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\DlnKotAlfaRemoteClient" "NoRepair" 1
 SectionEnd
 
 Section "uninstall"
@@ -60,5 +60,5 @@ Delete "$SMPROGRAMS\Alfa Remote Client\Alfa Remote Client.lnk"
 Delete "$SMPROGRAMS\Alfa Remote Client\Удалить.lnk"
 RMDir "$SMPROGRAMS\Alfa Remote Client"
 Delete "$DESKTOP\Alfa Remote Client.lnk"
-DeleteRegKey HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\${UNINST_KEY_NAME}"
+DeleteRegKey HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\DlnKotAlfaRemoteClient"
 SectionEnd
