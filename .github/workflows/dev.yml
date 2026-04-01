@@ -82,11 +82,11 @@ jobs:
 
       - name: Build NSIS installer
         run: |
-          $content = @"
+          $content = @'
 !define INFO_PROJECTNAME "ARC"
 !define INFO_COMPANYNAME "DlnKot"
 !define INFO_PRODUCTNAME "Alfa Remote Client"
-!define INFO_PRODUCTVERSION "$env:VERSION"
+!define INFO_PRODUCTVERSION "VERSION_PLACEHOLDER"
 !define INFO_COPYRIGHT "Copyright 2025 DlnKot"
 !define PRODUCT_EXECUTABLE "ARC.exe"
 !define UNINST_KEY_NAME "DlnKotAlfaRemoteClient"
@@ -115,7 +115,7 @@ ManifestDPIAware true
 !insertmacro MUI_LANGUAGE "Russian"
 
 Name "${INFO_PRODUCTNAME}"
-OutFile "..\..\bin\ARC-$env:VERSION-installer.exe"
+OutFile "..\..\bin\ARC-VERSION_PLACEHOLDER-installer.exe"
 InstallDir "$LOCALAPPDATA\Alfa Remote Client"
 ShowInstDetails show
 
@@ -147,7 +147,8 @@ RMDir "$SMPROGRAMS\Alfa Remote Client"
 Delete "$DESKTOP\Alfa Remote Client.lnk"
 DeleteRegKey HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\${UNINST_KEY_NAME}"
 SectionEnd
-"@
+'@
+          $content = $content -replace "VERSION_PLACEHOLDER", "$env:VERSION"
           $content | Out-File -FilePath build\installer.nsi -Encoding UTF8
           Push-Location build
           makensis installer.nsi
