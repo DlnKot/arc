@@ -1,12 +1,5 @@
 Unicode true
 
-####
-## Alfa Remote Client NSIS Installer
-## 
-## Silent mode: Run with /S for silent installation
-## Install to user directory (no admin required): $LOCALAPPDATA
-####
-
 !include "MUI.nsh"
 !include "FileFunc.nsh"
 
@@ -46,7 +39,7 @@ ManifestSupportedOS all
 !insertmacro MUI_LANGUAGE "Russian"
 
 Name "${INFO_PRODUCTNAME}"
-OutFile "..\..\bin\${INFO_PROJECTNAME}-${ARCH}-installer.exe"
+OutFile "..\..\bin\ARC-installer.exe"
 
 InstallDir "$LOCALAPPDATA\Alfa Remote Client"
 
@@ -66,7 +59,7 @@ FunctionEnd
 Section "!${INFO_PRODUCTNAME}" SecMain
     SetOutPath $INSTDIR
     
-    File /oname=ARC.exe "..\bin\ARC.exe"
+    File /oname=ARC.exe "ARC.exe"
     
     WriteUninstaller "$INSTDIR\Uninstall.exe"
     
