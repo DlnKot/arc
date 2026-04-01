@@ -136,7 +136,7 @@ func DefaultSettings() Settings {
 			LatencyThresholdMs: 100,
 		},
 		Updates: UpdatesSettings{
-			UseGithub:         false,
+			UseGithub:         true,
 			InternalServerURL: "http://10.230.121.212",
 			AutoCheck:         true,
 			InstallOnQuit:     false,

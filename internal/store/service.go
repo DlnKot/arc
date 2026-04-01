@@ -85,7 +85,7 @@ func (s *Service) Load() error {
 	if raw.Settings.NetworkCheck.LatencyThresholdMs > 0 {
 		merged.NetworkCheck = raw.Settings.NetworkCheck
 	}
-	if raw.Settings.Updates.UseGithub {
+	if raw.Settings.Updates.InternalServerURL != "" || raw.Settings.Updates.AutoCheck || raw.Settings.Updates.InstallOnQuit || raw.Settings.Updates.UseGithub {
 		merged.Updates = raw.Settings.Updates
 	}
 

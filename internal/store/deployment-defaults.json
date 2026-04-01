@@ -20,6 +20,12 @@
       "resourceName": "",
       "customPath": "",
       "customFlags": ""
+    },
+    "updates": {
+      "useGithub": true,
+      "internalServerUrl": "http://10.230.121.212",
+      "autoCheck": true,
+      "installOnQuit": false
     }
   },
   "connections": [

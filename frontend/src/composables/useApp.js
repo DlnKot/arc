@@ -32,8 +32,11 @@ function unwrapIpc(res) {
     err.ipc = res
     throw err
   }
-  if (res.success === true && Object.prototype.hasOwnProperty.call(res, 'data')) {
-    return res.data
+  if (res.success === true) {
+    if (Object.prototype.hasOwnProperty.call(res, 'data')) {
+      return res.data
+    }
+    return undefined
   }
   return res
 }
@@ -44,7 +47,6 @@ async function loadData() {
   isLoading.value = true
 
   try {
-    // Allows opening the renderer directly in a browser (Vite) without Electron preload.
     if (!window.api) {
       connections.value = []
       settings.value = { user: { domain: '', username: '' } }
@@ -57,20 +59,26 @@ async function loadData() {
       window.api.getSettings()
     ])
 
-    const connsData = unwrapIpc(conns)
-    const settingsData = unwrapIpc(s)
-
-    connections.value = normalizeConnectionsList(connsData)
-    settings.value = settingsData
-
-    if (!hasUserCredentials(settingsData)) {
-      isFirstRun.value = true
-    } else {
-      isFirstRun.value = false
+    let connsData = conns
+    if (conns && typeof conns === 'object' && conns.success === true) {
+      connsData = conns.data
     }
 
+    let settingsData = s
+    if (s && typeof s === 'object' && s.success === true) {
+      settingsData = s.data
+    }
+
+    if (Array.isArray(connsData)) {
+      connections.value = normalizeConnectionsList(connsData)
+    } else {
+      connections.value = []
+    }
+    settings.value = settingsData || {}
+
+    isFirstRun.value = !hasUserCredentials(settingsData)
+
   } catch (error) {
-    // Используем централизованное логирование
     const errorMsg = error?.message || String(error)
     console.error('Error loading data:', errorMsg)
     if (window.api?.log) {
@@ -89,18 +97,23 @@ async function loadData() {
 /* ------------------------ CONNECTION OPS ------------------------ */
 
 async function saveConnection(connection) {
-
   try {
     const isFactory = !!connection?.factoryId
     const isNew = !isFactory && !connection.id
     const result = await window.api.saveConnection(connection)
 
-    unwrapIpc(result)
+    const res = await window.api.getConnections()
+    let data = res
+    if (res && typeof res === 'object' && res.success === true) {
+      data = res.data
+    }
+    if (Array.isArray(data)) {
+      connections.value = normalizeConnectionsList(data)
+    } else {
+      connections.value = normalizeConnectionsList(unwrapIpc(res))
+    }
 
-    connections.value = normalizeConnectionsList(unwrapIpc(await window.api.getConnections()))
-
-    // Трекинг метрик
-    if (result.success && window.api?.trackEvent) {
+    if (result && typeof result === 'object' && result.success && window.api?.trackEvent) {
       if (isFactory) {
         window.api.trackEvent('default_connection_rename', { factoryId: connection.factoryId })
       } else if (isNew) {
@@ -122,17 +135,23 @@ async function saveConnection(connection) {
 }
 
 async function deleteConnection(id) {
-
   try {
-    // Получаем данные подключения перед удалением для трекинга
     const conn = connections.value.find(c => c.id === id)
     const connectionType = conn?.type || 'unknown'
-    
-    unwrapIpc(await window.api.deleteConnection(id))
 
-    connections.value = normalizeConnectionsList(unwrapIpc(await window.api.getConnections()))
+    await window.api.deleteConnection(id)
+
+    const res = await window.api.getConnections()
+    let data = res
+    if (res && typeof res === 'object' && res.success === true) {
+      data = res.data
+    }
+    if (Array.isArray(data)) {
+      connections.value = normalizeConnectionsList(data)
+    } else {
+      connections.value = normalizeConnectionsList(unwrapIpc(res))
+    }
     
-    // Трекинг метрик
     if (window.api?.trackEvent) {
       window.api.trackEvent('connection_delete', { type: connectionType })
     }
@@ -154,12 +173,17 @@ async function resetDefaultConnections() {
       return { success: false, error: 'Недоступно в браузере' }
     }
 
-    const res = await window.api.resetDefaultConnections()
-    const data = unwrapIpc(res)
+    await window.api.resetDefaultConnections()
+
+    const res = await window.api.getConnections()
+    let data = res
+    if (res && typeof res === 'object' && res.success === true) {
+      data = res.data
+    }
     if (Array.isArray(data)) {
       connections.value = normalizeConnectionsList(data)
     } else {
-      connections.value = normalizeConnectionsList(unwrapIpc(await window.api.getConnections()))
+      connections.value = []
     }
 
     if (window.api?.trackEvent) {
@@ -180,17 +204,30 @@ async function resetDefaultConnections() {
 /* -------------------------- SETTINGS OPS ------------------------ */
 
 async function saveSettings(newSettings) {
-
   try {
     const plainSettings = JSON.parse(JSON.stringify(newSettings))
 
-    unwrapIpc(await window.api.saveSettings(plainSettings))
+    await window.api.saveSettings(plainSettings)
 
-    settings.value = unwrapIpc(await window.api.getSettings())
-    connections.value = normalizeConnectionsList(unwrapIpc(await window.api.getConnections()))
+    const settingsRes = await window.api.getSettings()
+    let settingsData = settingsRes
+    if (settingsRes && typeof settingsRes === 'object' && settingsRes.success === true) {
+      settingsData = settingsRes.data
+    }
+    settings.value = settingsData || {}
+
+    const connsRes = await window.api.getConnections()
+    let connsData = connsRes
+    if (connsRes && typeof connsRes === 'object' && connsRes.success === true) {
+      connsData = connsRes.data
+    }
+    if (Array.isArray(connsData)) {
+      connections.value = normalizeConnectionsList(connsData)
+    } else {
+      connections.value = []
+    }
     isFirstRun.value = !hasUserCredentials(settings.value)
 
-    // Трекинг метрик
     if (window.api?.trackEvent) {
       window.api.trackEvent('settings_save', {})
     }

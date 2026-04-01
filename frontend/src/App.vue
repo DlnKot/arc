@@ -151,6 +151,9 @@
     <!-- First Run Modal -->
     <FirstRunModal v-if="isFirstRun" :saving="isSavingFirstRun" @save="handleFirstRunSave" />
 
+    <!-- Confirm Dialog -->
+    <ConfirmDialog v-model="confirmDialog.show" :title="confirmDialog.title" :message="confirmDialog.message" @confirm="confirmDialog.onConfirm" />
+
     <!-- Toast -->
     <div v-if="toast.show" :class="['toast', toast.type]">
       <span class="toast-message">{{ toast.message }}</span>
@@ -167,6 +170,7 @@ import NetworkCheckView from './components/NetworkCheckView.vue'
 import HelpView from './components/HelpView.vue'
 import ConnectionModal from './components/ConnectionModal.vue'
 import FirstRunModal from './components/FirstRunModal.vue'
+import ConfirmDialog from './components/ConfirmDialog.vue'
 import versionData from './version.js'
 import headerLogoBlack from './assets/icons/logo-black.svg'
 import headerLogoWhite from './assets/icons/logo-white.svg'
@@ -207,6 +211,21 @@ const defaultUsername = computed(() => {
 const showConnectionModal = ref(false)
 const editingConnection = ref(null)
 const isSavingFirstRun = ref(false)
+
+// Confirm dialog state
+const confirmDialog = reactive({
+  show: false,
+  title: 'Подтверждение',
+  message: '',
+  onConfirm: null
+})
+
+function openConfirmDialog(options) {
+  confirmDialog.title = options.title || 'Подтверждение'
+  confirmDialog.message = options.message || 'Вы уверены?'
+  confirmDialog.onConfirm = options.onConfirm || (() => {})
+  confirmDialog.show = true
+}
 
 // Toast state
 const toast = reactive({
@@ -258,18 +277,22 @@ async function handleSaveConnection(connection) {
 }
 
 async function handleDeleteConnection(id) {
-  if (!confirm('Вы уверены, что хотите удалить это подключение?')) return
-
-  try {
-    const result = await deleteConnection(id)
-    if (result.success) {
-      showToast('Подключение удалено', 'success')
-    } else {
-      showToast(result.error || 'Ошибка удаления подключения', 'error')
+  openConfirmDialog({
+    title: 'Удаление подключения',
+    message: 'Вы уверены, что хотите удалить это подключение?',
+    onConfirm: async () => {
+      try {
+        const result = await deleteConnection(id)
+        if (result.success) {
+          showToast('Подключение удалено', 'success')
+        } else {
+          showToast(result.error || 'Ошибка удаления подключения', 'error')
+        }
+      } catch (error) {
+        showToast('Ошибка удаления: ' + (error.message || 'Неизвестная ошибка'), 'error')
+      }
     }
-  } catch (error) {
-    showToast('Ошибка удаления: ' + (error.message || 'Неизвестная ошибка'), 'error')
-  }
+  })
 }
 
 // Launch handlers
@@ -332,19 +355,22 @@ async function handleSaveSettings(newSettings) {
 }
 
 async function handleResetDefaultConnections() {
-  const ok = confirm('Сбросить стандартные подключения к заводским настройкам?\n\nПользовательские подключения не будут затронуты.')
-  if (!ok) return
-
-  try {
-    const result = await resetDefaultConnections()
-    if (result.success) {
-      showToast('Стандартные подключения сброшены', 'success')
-    } else {
-      showToast(result.error || 'Не удалось сбросить стандартные подключения', 'error')
+  openConfirmDialog({
+    title: 'Сброс подключений',
+    message: 'Сбросить стандартные подключения к заводским настройкам?\n\nПользовательские подключения не будут затронуты.',
+    onConfirm: async () => {
+      try {
+        const result = await resetDefaultConnections()
+        if (result.success) {
+          showToast('Стандартные подключения сброшены', 'success')
+        } else {
+          showToast(result.error || 'Не удалось сбросить стандартные подключения', 'error')
+        }
+      } catch (error) {
+        showToast('Ошибка сброса: ' + (error?.message || String(error)), 'error')
+      }
     }
-  } catch (error) {
-    showToast('Ошибка сброса: ' + (error?.message || String(error)), 'error')
-  }
+  })
 }
 
 // First run handler

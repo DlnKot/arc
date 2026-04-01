@@ -94,16 +94,27 @@ func (s *Service) CheckForUpdates(useGithub bool, internalServerURL string) (map
 			latestVersion = v
 			downloadURL = url
 			releaseURL = fmt.Sprintf("https://github.com/%s/%s/releases/tag/%s", githubOwner, githubRepo, v)
+			if latestVersion != "" {
+				logInfo("github check: update available %s", latestVersion)
+			} else {
+				logInfo("github check: version is current")
+			}
 		}
 	}
 
 	if latestVersion == "" {
+		logInfo("falling back to internal server")
 		v, url, err := checkInternalUpdates(currentVersion, internalServerURL)
 		if err != nil {
 			logInfo("internal server check failed: %v", err)
 		} else {
 			latestVersion = v
 			downloadURL = url
+			if latestVersion != "" {
+				logInfo("internal server check: update available %s", latestVersion)
+			} else {
+				logInfo("internal server check: version is current")
+			}
 		}
 	}
 

@@ -446,6 +446,14 @@
         </div>
 
         <div class="form-group">
+          <label for="updates-github">Проверять обновления на GitHub</label>
+          <label class="toggle">
+            <input type="checkbox" id="updates-github" v-model="localSettings.updates.useGithub">
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+
+        <div class="form-group">
           <label for="updates-auto-check">Автоматически проверять обновления при запуске</label>
           <label class="toggle">
             <input type="checkbox" id="updates-auto-check" v-model="localSettings.updates.autoCheck">
@@ -658,7 +666,7 @@ const defaultSettings = {
     startMinimized: false
   },
   updates: {
-    useGithub: false,
+    useGithub: true,
     autoCheck: true,
     installOnQuit: false
   },
