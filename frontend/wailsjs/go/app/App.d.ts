@@ -43,3 +43,15 @@ export function ResetDefaultConnections():Promise<domain.Result___map_string_int
 export function SaveConnection(arg1:Record<string, any>):Promise<domain.Result_bool_>;
 
 export function SaveSettings(arg1:Record<string, any>):Promise<domain.Result_bool_>;
+
+export function TrackConnectionLaunch(arg1:string):Promise<domain.Result_bool_>;
+
+export function TrackError(arg1:string):Promise<domain.Result_bool_>;
+
+export function TrackEvent(arg1:string,arg2:Record<string, any>):Promise<domain.Result_bool_>;
+
+export function TrackHelpView(arg1:string):Promise<domain.Result_bool_>;
+
+export function TrackNetworkCheck():Promise<domain.Result_bool_>;
+
+export function TrackTabView(arg1:string):Promise<domain.Result_bool_>;

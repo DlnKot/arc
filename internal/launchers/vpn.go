@@ -53,7 +53,7 @@ func launchVpn() error {
 		if exe == "" {
 			return errors.New("VPN client not found: TrGUI.exe")
 		}
-		return startDetached(exe)
+		return startDetachedNoHide(exe)
 	}
 
 	return platformNotSupported("VPN launcher")

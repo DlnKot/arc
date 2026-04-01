@@ -46,7 +46,7 @@ window.api = {
       return () => {}
     }
 
-    return EventsOn('auto-update-event', callback)
+    return EventsOn('updater:progress', (data) => callback({ event: 'download-progress', data }))
   },
 
   getVersion: () => invoke(Backend.GetVersion),

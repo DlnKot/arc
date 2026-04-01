@@ -29,9 +29,21 @@ func logInfo(format string, args ...any) {
 }
 
 func startDetached(command string, args ...string) error {
+	return startDetachedWithOptions(command, false, args...)
+}
+
+func startDetachedNoHide(command string, args ...string) error {
+	return startDetachedWithOptions(command, true, args...)
+}
+
+func startDetachedWithOptions(command string, showWindow bool, args ...string) error {
 	logInfo("launch: %s %s", command, strings.Join(args, " "))
 	cmd := exec.Command(command, args...)
-	applyPlatformProcessAttrs(cmd)
+	if showWindow {
+		cmd.SysProcAttr = nil
+	} else {
+		applyPlatformProcessAttrs(cmd)
+	}
 	if err := cmd.Start(); err != nil {
 		return err
 	}

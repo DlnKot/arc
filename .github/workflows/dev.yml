@@ -74,18 +74,18 @@ jobs:
           $version = (Get-Content internal/config/config.go | Select-String 'AppVersion.*=' | ForEach-Object { ($_ -split '"')[1] })
           echo "VERSION=$version" >> $env:GITHUB_ENV
 
-      - name: Build Windows
-        run: wails build -platform=windows/amd64
+      - name: Build Windows with NSIS
+        run: wails build -platform=windows/amd64 -nsis
 
-      - name: Rename Windows artifact
+      - name: Rename Windows installer
         run: |
-          Copy-Item "build\bin\ARC.exe" "ARC-$env:VERSION.exe"
+          Copy-Item "build\bin\ARC-amd64-installer.exe" "ARC-$env:VERSION-installer.exe"
 
-      - name: Upload Windows artifact
+      - name: Upload Windows installer
         uses: actions/upload-artifact@v4
         with:
           name: arc-windows
-          path: ARC-${{ env.VERSION }}.exe
+          path: ARC-${{ env.VERSION }}-installer.exe
 
   release:
     needs: [build-macos, build-windows]
@@ -115,6 +115,6 @@ jobs:
           prerelease: true
           files: |
             artifacts/ARC-${{ env.VERSION }}.dmg
-            artifacts/ARC-${{ env.VERSION }}.exe
+            artifacts/ARC-${{ env.VERSION }}-installer.exe
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

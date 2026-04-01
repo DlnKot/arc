@@ -85,3 +85,27 @@ export function SaveConnection(arg1) {
 export function SaveSettings(arg1) {
   return window['go']['app']['App']['SaveSettings'](arg1);
 }
+
+export function TrackConnectionLaunch(arg1) {
+  return window['go']['app']['App']['TrackConnectionLaunch'](arg1);
+}
+
+export function TrackError(arg1) {
+  return window['go']['app']['App']['TrackError'](arg1);
+}
+
+export function TrackEvent(arg1, arg2) {
+  return window['go']['app']['App']['TrackEvent'](arg1, arg2);
+}
+
+export function TrackHelpView(arg1) {
+  return window['go']['app']['App']['TrackHelpView'](arg1);
+}
+
+export function TrackNetworkCheck() {
+  return window['go']['app']['App']['TrackNetworkCheck']();
+}
+
+export function TrackTabView(arg1) {
+  return window['go']['app']['App']['TrackTabView'](arg1);
+}

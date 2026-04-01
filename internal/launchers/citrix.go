@@ -34,12 +34,17 @@ func launchCitrix(connection map[string]any, settings map[string]any) error {
 		if exe == "" {
 			return errors.New("Citrix Workspace not found")
 		}
-		args := []string{"-store", storeURL}
+
+		storeAlreadyConfigured := boolSetting(citrixSettings, "storeAlreadyConfigured", false)
+		var args []string
+		if !storeAlreadyConfigured {
+			args = []string{"-store", storeURL}
+		}
 		if resourceName != "" {
 			args = append(args, "-launch", resourceName, "-quiet")
 		}
 		args = append(args, customFlags...)
-		return startDetached(exe, args...)
+		return startDetachedNoHide(exe, args...)
 	}
 
 	if runtime.GOOS == "darwin" {

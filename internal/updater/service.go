@@ -283,7 +283,7 @@ func (s *Service) DownloadUpdate() error {
 		downloadPath += ".dmg"
 	}
 
-	client := &http.Client{Timeout: 120 * time.Second}
+	client := &http.Client{Timeout: 600 * time.Second}
 	resp, err := client.Get(downloadURL)
 	if err != nil {
 		s.emitEvent("updater:error", "Download failed: "+err.Error())
@@ -369,11 +369,16 @@ func (s *Service) InstallNow() error {
 	downloadPath := filepath.Join(os.TempDir(), "arc-update")
 	if runtime.GOOS == "windows" {
 		downloadPath += ".exe"
-		proc, err := os.StartProcess(downloadPath, []string{}, &os.ProcAttr{})
-		if err != nil {
+
+		cmd := exec.Command(downloadPath, "/S")
+		cmd.Stdout = nil
+		cmd.Stderr = nil
+
+		if err := cmd.Start(); err != nil {
 			return fmt.Errorf("failed to start installer: %w", err)
 		}
-		proc.Release()
+
+		logInfo("installer started, exiting app...")
 		os.Exit(0)
 	} else if runtime.GOOS == "darwin" {
 		downloadPath += ".dmg"

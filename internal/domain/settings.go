@@ -57,10 +57,11 @@ type HorizonSettings struct {
 }
 
 type CitrixSettings struct {
-	AccountName  string `json:"accountName"`
-	ResourceName string `json:"resourceName"`
-	CustomPath   string `json:"customPath"`
-	CustomFlags  string `json:"customFlags"`
+	AccountName            string `json:"accountName"`
+	ResourceName           string `json:"resourceName"`
+	StoreAlreadyConfigured bool   `json:"storeAlreadyConfigured"`
+	CustomPath             string `json:"customPath"`
+	CustomFlags            string `json:"customFlags"`
 }
 
 type GeneralSettings struct {
@@ -115,7 +116,7 @@ func DefaultSettings() Settings {
 			Unattended:                   false,
 			NonInteractive:               false,
 			LaunchMinimized:              false,
-			LoginAsCurrentUser:           false,
+			LoginAsCurrentUser:           true,
 			HideClientAfterLaunchSession: false,
 			UseExisting:                  false,
 			SingleAutoConnect:            false,
@@ -123,10 +124,11 @@ func DefaultSettings() Settings {
 			CustomFlags:                  "",
 		},
 		Citrix: CitrixSettings{
-			AccountName:  "",
-			ResourceName: "",
-			CustomPath:   "",
-			CustomFlags:  "",
+			AccountName:            "",
+			ResourceName:           "",
+			StoreAlreadyConfigured: false,
+			CustomPath:             "",
+			CustomFlags:            "",
 		},
 		General: GeneralSettings{
 			MinimizeToTray: false,

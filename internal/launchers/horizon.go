@@ -29,7 +29,7 @@ func launchHorizon(connection map[string]any, settings map[string]any) error {
 		if exe == "" {
 			return errors.New("VMware Horizon Client not found")
 		}
-		return startDetached(exe, buildHorizonArgsWindows(host, username, asString(connection["desktopPool"]), horizonSettings)...)
+		return startDetachedNoHide(exe, buildHorizonArgsWindows(host, username, asString(connection["desktopPool"]), horizonSettings)...)
 	}
 
 	if runtime.GOOS == "darwin" {

@@ -402,45 +402,21 @@ const updateError = ref(null)
 
 // Initialize auto-update event listener
 function initAutoUpdater() {
-  // Wails events
-  if (window.api?.onEvent) {
-    window.api.onEvent((event, data) => {
-      switch (event) {
-        case 'updater:progress':
-          updateProgress.value.percent = data
-          break
-        case 'updater:downloaded':
-          updateStatus.value.updateDownloaded = true
-          break
-        case 'updater:error':
-          updateError.value = data
-          break
-      }
-    })
-  }
+  if (!window.api?.onAutoUpdateEvent) return
 
-  // Legacy Electron events (if any)
-  if (window.api?.onAutoUpdateEvent) {
-    window.api.onAutoUpdateEvent(({ event, data }) => {
-      switch (event) {
-        case 'update-available':
-          updateStatus.value.updateAvailable = true
-          updateStatus.value.version = data.version
-          updateStatus.value.releaseUrl = data.releaseUrl || null
-          break
-        case 'download-progress':
-          updateProgress.value = data
-          break
-        case 'update-downloaded':
-          updateStatus.value.updateDownloaded = true
-          updateStatus.value.version = data.version
-          break
-        case 'update-error':
-          updateError.value = data.message
-          break
-      }
-    })
-  }
+  window.api.onAutoUpdateEvent(({ event, data }) => {
+    switch (event) {
+      case 'download-progress':
+        updateProgress.value.percent = data
+        break
+      case 'updater:downloaded':
+        updateStatus.value.updateDownloaded = true
+        break
+      case 'updater:error':
+        updateError.value = data
+        break
+    }
+  })
 }
 
 // Check for updates manually
@@ -481,8 +457,8 @@ async function downloadUpdate() {
 }
 
 // Install downloaded update now
-function installNow() {
-  window.api.installNow()
+async function installNow() {
+  await window.api.installUpdate()
 }
 
 // Install on quit (Windows/macOS)
