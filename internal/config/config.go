@@ -2,6 +2,6 @@ package config
 
 const (
 	AppName         = "Alfa Remote Client"
-	AppVersion      = "0.6.3"
+	AppVersion      = "0.6.4"
 	DefaultPingWarn = 100.0
 )

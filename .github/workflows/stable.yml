@@ -74,12 +74,24 @@ jobs:
           $version = (Get-Content internal/config/config.go | Select-String 'AppVersion.*=' | ForEach-Object { ($_ -split '"')[1] })
           echo "VERSION=$version" >> $env:GITHUB_ENV
 
+      - name: Install NSIS
+        run: |
+          choco install nsis -y
+
       - name: Build Windows with NSIS
         run: wails build -platform=windows/amd64 -nsis
 
-      - name: Rename Windows installer
+      - name: Find Windows installer
         run: |
-          Copy-Item "build\bin\ARC-amd64-installer.exe" "ARC-$env:VERSION-installer.exe"
+          $installer = Get-ChildItem "build\bin\*.exe" | Where-Object { $_.Name -match "installer" } | Select-Object -First 1
+          if ($installer) {
+            Write-Host "Found installer: $($installer.Name)"
+            Copy-Item $installer.FullName "ARC-$env:VERSION-installer.exe"
+          } else {
+            Write-Host "No installer found, looking for all exe files..."
+            Get-ChildItem "build\bin\*.exe" | ForEach-Object { Write-Host $_.Name }
+            exit 1
+          }
 
       - name: Upload Windows installer
         uses: actions/upload-artifact@v4
