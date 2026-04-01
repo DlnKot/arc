@@ -78,7 +78,9 @@ jobs:
         run: wails build -platform=windows/amd64
 
       - name: Install NSIS
-        run: choco install nsis -y
+        run: |
+          choco install nsis -y
+          refreshenv
 
       - name: Update NSIS script with version
         run: |
@@ -86,8 +88,12 @@ jobs:
 
       - name: Build NSIS installer
         run: |
+          $makensis = (Get-Command makensis -ErrorAction SilentlyContinue).Source
+          if (-not $makensis) {
+            $makensis = "C:\Program Files (x86)\NSIS\makensis.exe"
+          }
           Push-Location build
-          makensis installer.nsi
+          & $makensis installer.nsi
           Pop-Location
 
       - name: Upload Windows installer
