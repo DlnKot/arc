@@ -84,7 +84,7 @@ jobs:
 
       - name: Update NSIS script with version
         run: |
-          (Get-Content build\installer.nsi) -replace 'VER', "$env:VERSION" | Set-Content build\installer.nsi
+          (Get-Content build\installer.nsi) -replace '__VERSION__', "$env:VERSION" | Set-Content build\installer.nsi
 
       - name: Build NSIS installer
         run: |

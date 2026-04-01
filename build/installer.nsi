@@ -1,7 +1,6 @@
 !define INFO_PROJECTNAME "ARC"
 !define INFO_COMPANYNAME "DlnKot"
 !define INFO_PRODUCTNAME "Alfa Remote Client"
-!define INFO_PRODUCTVERSION "VER"
 !define INFO_COPYRIGHT "Copyright 2025 DlnKot"
 !define PRODUCT_EXECUTABLE "ARC.exe"
 !define UNINST_KEY_NAME "DlnKotAlfaRemoteClient"
@@ -9,12 +8,12 @@
 Unicode true
 !include "MUI.nsh"
 
-VIProductVersion "VER.0"
-VIFileVersion "VER.0"
+VIProductVersion "__VERSION__.0"
+VIFileVersion "__VERSION__.0"
 VIAddVersionKey "CompanyName" "DlnKot"
 VIAddVersionKey "FileDescription" "Alfa Remote Client Installer"
-VIAddVersionKey "ProductVersion" "VER"
-VIAddVersionKey "FileVersion" "VER"
+VIAddVersionKey "ProductVersion" "__VERSION__"
+VIAddVersionKey "FileVersion" "__VERSION__"
 VIAddVersionKey "LegalCopyright" "Copyright 2025 DlnKot"
 VIAddVersionKey "ProductName" "Alfa Remote Client"
 
@@ -30,7 +29,7 @@ ManifestDPIAware true
 !insertmacro MUI_LANGUAGE "Russian"
 
 Name "Alfa Remote Client"
-OutFile "..\..\bin\ARC-VER-installer.exe"
+OutFile "..\..\bin\ARC-__VERSION__-installer.exe"
 InstallDir "$LOCALAPPDATA\Alfa Remote Client"
 ShowInstDetails show
 
@@ -49,7 +48,7 @@ WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\DlnKotAlfa
 WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\DlnKotAlfaRemoteClient" "InstallLocation" "$INSTDIR"
 WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\DlnKotAlfaRemoteClient" "DisplayIcon" "$INSTDIR\ARC.exe"
 WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\DlnKotAlfaRemoteClient" "Publisher" "DlnKot"
-WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\DlnKotAlfaRemoteClient" "DisplayVersion" "VER"
+WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\DlnKotAlfaRemoteClient" "DisplayVersion" "__VERSION__"
 WriteRegDWORD HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\DlnKotAlfaRemoteClient" "NoModify" 1
 WriteRegDWORD HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\DlnKotAlfaRemoteClient" "NoRepair" 1
 SectionEnd
