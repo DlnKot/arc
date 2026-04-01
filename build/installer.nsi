@@ -18,8 +18,8 @@ VIAddVersionKey "LegalCopyright" "Copyright 2025 DlnKot"
 VIAddVersionKey "ProductName" "Alfa Remote Client"
 
 ManifestDPIAware true
-!define MUI_ICON "..\icon.ico"
-!define MUI_UNICON "..\icon.ico"
+!define MUI_ICON "..\windows\icon.ico"
+!define MUI_UNICON "..\windows\icon.ico"
 !define MUI_ABORTWARNING
 !insertmacro MUI_PAGE_WELCOME
 !insertmacro MUI_PAGE_DIRECTORY
