@@ -87,6 +87,12 @@ func findCitrixExecutableWindows(customPath string) string {
 		filepath.Join(programFiles, "Citrix", "ICA Client", "selfservice.exe"),
 		filepath.Join(localAppData, "Citrix", "ICA Client", "SelfServicePlugin", "SelfService.exe"),
 		filepath.Join(programData, "Citrix", "ICA Client", "SelfServicePlugin", "SelfService.exe"),
+		filepath.Join(programFiles86, "Citrix", "ICA Client", "Citrix Workspace.exe"),
+		filepath.Join(programFiles, "Citrix", "ICA Client", "Citrix Workspace.exe"),
+		filepath.Join(programFiles86, "Citrix", "Workspace", "SelfService.exe"),
+		filepath.Join(programFiles, "Citrix", "Workspace", "SelfService.exe"),
+		filepath.Join(programFiles86, "Citrix", "Receiver", "SelfService.exe"),
+		filepath.Join(programFiles, "Citrix", "Receiver", "SelfService.exe"),
 	}
 	if path := firstExisting(candidates...); path != "" {
 		return path
@@ -95,6 +101,9 @@ func findCitrixExecutableWindows(customPath string) string {
 		return resolved
 	}
 	if resolved, err := exec.LookPath("selfservice.exe"); err == nil {
+		return resolved
+	}
+	if resolved, err := exec.LookPath("Citrix Workspace.exe"); err == nil {
 		return resolved
 	}
 	return ""

@@ -2,7 +2,9 @@ package main
 
 import (
 	"embed"
+	"os"
 
+	"github.com/DlnKot/arc/internal/analytics"
 	appsvc "github.com/DlnKot/arc/internal/app"
 	"github.com/DlnKot/arc/internal/config"
 	"github.com/DlnKot/arc/internal/launchers"
@@ -29,7 +31,11 @@ func main() {
 	networkSvc := network.New(logger)
 	launcherSvc := launchers.New(logger)
 	updaterSvc := updater.New(logger)
-	app := appsvc.New(storeSvc, networkSvc, launcherSvc, updaterSvc, logger)
+
+	dataDir := getDataDir(config.AppName)
+	analyticsSvc := analytics.New(dataDir, logger)
+
+	app := appsvc.New(storeSvc, networkSvc, launcherSvc, updaterSvc, analyticsSvc, logger)
 
 	err = wails.Run(&options.App{
 		Title:     config.AppName,
@@ -51,4 +57,9 @@ func main() {
 	if err != nil {
 		println("Error:", err.Error())
 	}
+}
+
+func getDataDir(appName string) string {
+	configDir, _ := os.UserConfigDir()
+	return configDir + "/" + appName
 }

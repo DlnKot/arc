@@ -66,12 +66,12 @@ window.api = {
   },
   log: (level, message) => invoke(Backend.Log, level, message),
 
-  trackEvent: () => Promise.resolve({ success: true, data: true }),
-  trackConnectionLaunch: () => Promise.resolve({ success: true, data: true }),
-  trackTabView: () => Promise.resolve({ success: true, data: true }),
-  trackHelpView: () => Promise.resolve({ success: true, data: true }),
-  trackNetworkCheck: () => Promise.resolve({ success: true, data: true }),
-  trackError: () => Promise.resolve({ success: true, data: true })
+  trackEvent: (eventType, data) => invoke(Backend.TrackEvent, eventType, data),
+  trackConnectionLaunch: (connType) => invoke(Backend.TrackConnectionLaunch, connType),
+  trackTabView: (tab) => invoke(Backend.TrackTabView, tab),
+  trackHelpView: (section) => invoke(Backend.TrackHelpView, section),
+  trackNetworkCheck: () => invoke(Backend.TrackNetworkCheck),
+  trackError: (errorMsg) => invoke(Backend.TrackError, errorMsg)
 }
 
 createApp(App).mount('#app')

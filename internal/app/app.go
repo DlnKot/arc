@@ -6,6 +6,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/DlnKot/arc/internal/analytics"
 	"github.com/DlnKot/arc/internal/config"
 	"github.com/DlnKot/arc/internal/domain"
 	"github.com/DlnKot/arc/internal/launchers"
@@ -21,15 +22,17 @@ type App struct {
 	network   *network.Service
 	launchers *launchers.Service
 	updater   *updater.Service
+	analytics *analytics.Service
 	logger    logging.Logger
 }
 
-func New(storeSvc *store.Service, networkSvc *network.Service, launcherSvc *launchers.Service, updaterSvc *updater.Service, logger logging.Logger) *App {
+func New(storeSvc *store.Service, networkSvc *network.Service, launcherSvc *launchers.Service, updaterSvc *updater.Service, analyticsSvc *analytics.Service, logger logging.Logger) *App {
 	return &App{
 		store:     storeSvc,
 		network:   networkSvc,
 		launchers: launcherSvc,
 		updater:   updaterSvc,
+		analytics: analyticsSvc,
 		logger:    logger,
 	}
 }
@@ -43,6 +46,10 @@ func (a *App) Startup(ctx context.Context) {
 	}
 
 	a.updater.SetContext(ctx)
+
+	if a.analytics != nil {
+		a.analytics.TrackAppStart()
+	}
 
 	go func() {
 		time.Sleep(3 * time.Second)
@@ -194,6 +201,9 @@ func (a *App) InstallOnQuit() domain.Result[bool] {
 
 func (a *App) Shutdown(ctx context.Context) {
 	a.updater.CheckAndInstallOnQuit()
+	if a.analytics != nil {
+		a.analytics.EndSession()
+	}
 }
 
 func (a *App) GetUpdateStatus() domain.Result[map[string]any] {
@@ -218,6 +228,48 @@ func (a *App) Log(level string, message string) domain.Result[bool] {
 		default:
 			a.logger.Infof("%s", message)
 		}
+	}
+	return ok(true)
+}
+
+func (a *App) TrackEvent(eventType string, data map[string]any) domain.Result[bool] {
+	if a.analytics != nil {
+		a.analytics.TrackEvent(eventType, data)
+	}
+	return ok(true)
+}
+
+func (a *App) TrackTabView(tab string) domain.Result[bool] {
+	if a.analytics != nil {
+		a.analytics.TrackTabView(tab)
+	}
+	return ok(true)
+}
+
+func (a *App) TrackHelpView(section string) domain.Result[bool] {
+	if a.analytics != nil {
+		a.analytics.TrackHelpView(section)
+	}
+	return ok(true)
+}
+
+func (a *App) TrackNetworkCheck() domain.Result[bool] {
+	if a.analytics != nil {
+		a.analytics.TrackNetworkCheck()
+	}
+	return ok(true)
+}
+
+func (a *App) TrackConnectionLaunch(connType string) domain.Result[bool] {
+	if a.analytics != nil {
+		a.analytics.TrackConnectionLaunch(connType)
+	}
+	return ok(true)
+}
+
+func (a *App) TrackError(errMsg string) domain.Result[bool] {
+	if a.analytics != nil {
+		a.analytics.TrackError(errMsg)
 	}
 	return ok(true)
 }

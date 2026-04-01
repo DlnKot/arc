@@ -37,6 +37,10 @@ func launchVpn() error {
 				filepath.Join(base, "TrGUI", "TrGUI", "TrGUI.exe"),
 				filepath.Join(base, "CheckPoint", "Endpoint Connect", "TrGUI.exe"),
 				filepath.Join(base, "CheckPoint", "Endpoint Security VPN", "TrGUI.exe"),
+				filepath.Join(base, "Check Point", "Endpoint Connect", "TrGUI.exe"),
+				filepath.Join(base, "Check Point", "Endpoint Security VPN", "TrGUI.exe"),
+				filepath.Join(programFiles86, "CheckPoint", "Endpoint Connect", "TrGUI.exe"),
+				filepath.Join(programFiles86, "CheckPoint", "Endpoint Security VPN", "TrGUI.exe"),
 			)
 		}
 

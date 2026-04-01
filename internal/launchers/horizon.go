@@ -160,14 +160,22 @@ func findHorizonExecutableWindows(customPath string) string {
 	candidates := []string{
 		filepath.Join(programFiles, "VMware", "VMware Horizon Client", "bin", "vmware-view.exe"),
 		filepath.Join(programFiles86, "VMware", "VMware Horizon Client", "bin", "vmware-view.exe"),
+		filepath.Join(programFiles, "VMware", "VMware Horizon Client", "vmware-view.exe"),
+		filepath.Join(programFiles86, "VMware", "VMware Horizon Client", "vmware-view.exe"),
+		filepath.Join(programFiles, "VMware", "VMware Horizon View Client", "vmware-view.exe"),
+		filepath.Join(programFiles86, "VMware", "VMware Horizon View Client", "vmware-view.exe"),
+		filepath.Join(programFiles, "VMware", "VMware Horizon View Client", "bin", "vmware-view.exe"),
+		filepath.Join(programFiles86, "VMware", "VMware Horizon View Client", "bin", "vmware-view.exe"),
 		filepath.Join(programFiles, "VMware", "VMware Horizon", "View", "Client", "bin", "vmware-view.exe"),
 		filepath.Join(programFiles86, "VMware", "VMware Horizon", "View", "Client", "bin", "vmware-view.exe"),
 		filepath.Join(programData, "VMware", "VMware Horizon", "View", "Client", "bin", "vmware-view.exe"),
 		filepath.Join(localAppData, "VMware", "VMware Horizon Client", "bin", "vmware-view.exe"),
 	}
+
 	if path := firstExisting(candidates...); path != "" {
 		return path
 	}
+
 	if resolved, err := exec.LookPath("vmware-view.exe"); err == nil {
 		return resolved
 	}

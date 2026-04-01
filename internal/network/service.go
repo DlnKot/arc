@@ -104,7 +104,19 @@ func runPing(host string, packets int) (domain.PingMetrics, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
 	defer cancel()
 
-	raw, err := exec.CommandContext(ctx, "ping", args...).CombinedOutput()
+	var raw []byte
+	var err error
+
+	if runtime.GOOS == "windows" {
+		cmd := exec.CommandContext(ctx, "cmd", append([]string{"/c", "chcp", "65001", ">", "NUL", "&", "ping"}, args...)...)
+		applyPlatformPingAttrs(cmd)
+		raw, err = cmd.CombinedOutput()
+	} else {
+		cmd := exec.CommandContext(ctx, "ping", args...)
+		applyPlatformPingAttrs(cmd)
+		raw, err = cmd.CombinedOutput()
+	}
+
 	output := string(raw)
 	metrics := domain.PingMetrics{Raw: output}
 	parsePingOutput(&metrics, output)
@@ -123,7 +135,7 @@ func parsePingOutput(metrics *domain.PingMetrics, output string) {
 	winMaxRe := regexp.MustCompile(`Maximum = ([0-9]+)ms`)
 
 	if match := lossRe.FindStringSubmatch(output); len(match) == 2 {
-		fmt.Sscanf(match[1], "%f", &metrics.LossPercent)
+		fmt.Sscanf(match[1], "%f", &metrics.LostPercent)
 	}
 	if match := statsRe.FindStringSubmatch(output); len(match) == 4 {
 		fmt.Sscanf(match[1], "%f", &metrics.MinMs)
@@ -131,7 +143,7 @@ func parsePingOutput(metrics *domain.PingMetrics, output string) {
 		fmt.Sscanf(match[3], "%f", &metrics.MaxMs)
 	}
 	if match := winLossRe.FindStringSubmatch(output); len(match) == 2 {
-		fmt.Sscanf(match[1], "%f", &metrics.LossPercent)
+		fmt.Sscanf(match[1], "%f", &metrics.LostPercent)
 	}
 	if match := winAvgRe.FindStringSubmatch(output); len(match) == 2 {
 		fmt.Sscanf(match[1], "%f", &metrics.AvgMs)
@@ -145,10 +157,10 @@ func parsePingOutput(metrics *domain.PingMetrics, output string) {
 }
 
 func evaluatePing(metrics domain.PingMetrics) domain.PingEvaluation {
-	if metrics.Error != "" || metrics.LossPercent >= 100 {
+	if metrics.Error != "" || metrics.LostPercent >= 100 {
 		return domain.PingEvaluation{Status: "down", Label: "Недоступен", Recommendation: "Проверьте интернет-соединение и VPN, если он требуется."}
 	}
-	if metrics.LossPercent > 0 {
+	if metrics.LostPercent > 0 {
 		return domain.PingEvaluation{Status: "loss", Label: "Потери пакетов", Recommendation: "Соединение нестабильно: возможны обрывы или деградация качества."}
 	}
 	if metrics.AvgMs > config.DefaultPingWarn {
