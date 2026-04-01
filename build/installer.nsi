@@ -18,8 +18,8 @@ VIAddVersionKey "LegalCopyright" "Copyright 2025 DlnKot"
 VIAddVersionKey "ProductName" "Alfa Remote Client"
 
 ManifestDPIAware true
-!define MUI_ICON "..\windows\icon.ico"
-!define MUI_UNICON "..\windows\icon.ico"
+!define MUI_ICON "windows\icon.ico"
+!define MUI_UNICON "windows\icon.ico"
 !define MUI_ABORTWARNING
 !insertmacro MUI_PAGE_WELCOME
 !insertmacro MUI_PAGE_DIRECTORY
@@ -29,13 +29,13 @@ ManifestDPIAware true
 !insertmacro MUI_LANGUAGE "Russian"
 
 Name "Alfa Remote Client"
-OutFile "..\..\bin\ARC-__VERSION__-installer.exe"
+OutFile "bin\ARC-__VERSION__-installer.exe"
 InstallDir "$LOCALAPPDATA\Alfa Remote Client"
 ShowInstDetails show
 
 Section "!Alfa Remote Client" SecMain
 SetOutPath $INSTDIR
-File "..\..\bin\ARC.exe"
+File "bin\ARC.exe"
 WriteUninstaller "$INSTDIR\Uninstall.exe"
 CreateDirectory "$SMPROGRAMS\Alfa Remote Client"
 CreateShortcut "$SMPROGRAMS\Alfa Remote Client\Alfa Remote Client.lnk" "$INSTDIR\ARC.exe"
@@ -44,7 +44,7 @@ IfFileExists "$DESKTOP\Alfa Remote Client.lnk" skip_desktop
 CreateShortcut "$DESKTOP\Alfa Remote Client.lnk" "$INSTDIR\ARC.exe"
 skip_desktop:
 WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\DlnKotAlfaRemoteClient" "DisplayName" "Alfa Remote Client"
-WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\DlnKotAlfaRemoteClient" "UninstallString" "msiexec /x$INSTDIR\Uninstall.exe"
+WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\DlnKotAlfaRemoteClient" "UninstallString" "$INSTDIR\Uninstall.exe"
 WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\DlnKotAlfaRemoteClient" "InstallLocation" "$INSTDIR"
 WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\DlnKotAlfaRemoteClient" "DisplayIcon" "$INSTDIR\ARC.exe"
 WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\DlnKotAlfaRemoteClient" "Publisher" "DlnKot"

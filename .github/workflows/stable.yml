@@ -100,7 +100,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: arc-windows
-          path: ARC-${{ env.VERSION }}-installer.exe
+          path: build/bin/ARC-${{ env.VERSION }}-installer.exe
 
   release:
     needs: [build-macos, build-windows]
