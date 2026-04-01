@@ -325,7 +325,7 @@ async function launchConnection(conn) {
         result = await window.api.launchRdp(connectionWithCreds, mergedSettings)
         // Трекинг запуска подключения
         if (result?.success && window.api?.trackConnectionLaunch) {
-          window.api.trackConnectionLaunch('rdp', true)
+          window.api.trackConnectionLaunch('rdp')
         }
         break
 
@@ -333,7 +333,7 @@ async function launchConnection(conn) {
         result = await window.api.launchHorizon(connectionWithCreds, mergedSettings)
         // Трекинг запуска подключения
         if (result?.success && window.api?.trackConnectionLaunch) {
-          window.api.trackConnectionLaunch('horizon', true)
+          window.api.trackConnectionLaunch('horizon')
         }
         break
 
@@ -341,7 +341,7 @@ async function launchConnection(conn) {
         result = await window.api.launchCitrix(connectionWithCreds, mergedSettings)
         // Трекинг запуска подключения
         if (result?.success && window.api?.trackConnectionLaunch) {
-          window.api.trackConnectionLaunch('citrix', true)
+          window.api.trackConnectionLaunch('citrix')
         }
         break
 
@@ -362,7 +362,7 @@ async function launchConnection(conn) {
     }
     // Трекинг ошибки
     if (window.api?.trackError) {
-      window.api.trackError({ message: errorMsg, stack: error?.stack })
+      window.api.trackError(errorMsg)
     }
     return {
       success: false,

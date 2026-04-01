@@ -320,7 +320,7 @@ async function handleVpnClick() {
       showToast('VPN клиент запущен', 'success')
       // Трекинг метрик
       if (window.api?.trackConnectionLaunch) {
-        window.api.trackConnectionLaunch('vpn', true)
+        window.api.trackConnectionLaunch('vpn')
       }
     } else {
       showToast(result?.error || 'Не удалось запустить VPN клиент', 'error')

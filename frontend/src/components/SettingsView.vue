@@ -648,7 +648,7 @@ const defaultSettings = {
     unattended: false,
     nonInteractive: false,
     launchMinimized: false,
-    loginAsCurrentUser: false,
+    loginAsCurrentUser: true,
     hideClientAfterLaunchSession: false,
     useExisting: false,
     singleAutoConnect: false,

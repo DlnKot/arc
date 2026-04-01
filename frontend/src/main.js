@@ -40,6 +40,8 @@ window.api = {
   checkForUpdates: () => invoke(Backend.CheckForUpdates),
   downloadUpdate: () => invoke(Backend.DownloadUpdate),
   installUpdate: () => invoke(Backend.InstallNow),
+  installOnQuit: () => invoke(Backend.InstallOnQuit),
+  cancelDownload: () => invoke(Backend.CancelDownload),
   getUpdateStatus: () => invoke(Backend.GetUpdateStatus),
   onAutoUpdateEvent: (callback) => {
     if (!isWailsAvailable()) {

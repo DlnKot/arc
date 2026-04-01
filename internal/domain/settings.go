@@ -196,10 +196,11 @@ func (s Settings) ToMap() map[string]any {
 			"customFlags":                  s.Horizon.CustomFlags,
 		},
 		"citrix": map[string]any{
-			"accountName":  s.Citrix.AccountName,
-			"resourceName": s.Citrix.ResourceName,
-			"customPath":   s.Citrix.CustomPath,
-			"customFlags":  s.Citrix.CustomFlags,
+			"accountName":            s.Citrix.AccountName,
+			"resourceName":           s.Citrix.ResourceName,
+			"storeAlreadyConfigured": s.Citrix.StoreAlreadyConfigured,
+			"customPath":             s.Citrix.CustomPath,
+			"customFlags":            s.Citrix.CustomFlags,
 		},
 		"general": map[string]any{
 			"minimizeToTray": s.General.MinimizeToTray,
@@ -347,6 +348,9 @@ func SettingsFromMap(m map[string]any) Settings {
 		if v, ok := citrix["resourceName"].(string); ok {
 			s.Citrix.ResourceName = v
 		}
+		if v, ok := citrix["storeAlreadyConfigured"].(bool); ok {
+			s.Citrix.StoreAlreadyConfigured = v
+		}
 		if v, ok := citrix["customPath"].(string); ok {
 			s.Citrix.CustomPath = v
 		}
@@ -365,7 +369,12 @@ func SettingsFromMap(m map[string]any) Settings {
 	}
 
 	if nc, ok := m["networkCheck"].(map[string]any); ok {
-		if v, ok := nc["latencyThresholdMs"].(float64); ok {
+		switch v := nc["latencyThresholdMs"].(type) {
+		case float64:
+			s.NetworkCheck.LatencyThresholdMs = int(v)
+		case int:
+			s.NetworkCheck.LatencyThresholdMs = v
+		case int64:
 			s.NetworkCheck.LatencyThresholdMs = int(v)
 		}
 	}

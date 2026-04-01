@@ -90,43 +90,85 @@ func (s *Service) TrackEvent(eventType string, data map[string]any) {
 }
 
 func (s *Service) TrackAppStart() {
-	s.TrackEvent("app_start", nil)
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.session == nil {
+		return
+	}
+	s.session.Events = append(s.session.Events, domain.AnalyticsEvent{
+		Type:      "app_start",
+		Timestamp: time.Now().UTC(),
+	})
 }
 
 func (s *Service) TrackTabView(tab string) {
-	s.TrackEvent("tab_view", map[string]any{"tab": tab})
-	if s.session != nil {
-		s.session.Stats.TabsViewCount[tab]++
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.session == nil {
+		return
 	}
+	s.session.Events = append(s.session.Events, domain.AnalyticsEvent{
+		Type:      "tab_view",
+		Timestamp: time.Now().UTC(),
+		Data:      map[string]any{"tab": tab},
+	})
+	s.session.Stats.TabsViewCount[tab]++
 }
 
 func (s *Service) TrackHelpView(section string) {
-	s.TrackEvent("help_view", map[string]any{"section": section})
-	if s.session != nil {
-		s.session.Stats.HelpViewsBySection[section]++
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.session == nil {
+		return
 	}
+	s.session.Events = append(s.session.Events, domain.AnalyticsEvent{
+		Type:      "help_view",
+		Timestamp: time.Now().UTC(),
+		Data:      map[string]any{"section": section},
+	})
+	s.session.Stats.HelpViewsBySection[section]++
 }
 
 func (s *Service) TrackNetworkCheck() {
-	s.TrackEvent("network_check", nil)
-	if s.session != nil {
-		s.session.Stats.NetworkCheckCount++
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.session == nil {
+		return
 	}
+	s.session.Events = append(s.session.Events, domain.AnalyticsEvent{
+		Type:      "network_check",
+		Timestamp: time.Now().UTC(),
+	})
+	s.session.Stats.NetworkCheckCount++
 }
 
 func (s *Service) TrackConnectionLaunch(connType string) {
-	s.TrackEvent("connection_launch", map[string]any{"type": connType})
-	if s.session != nil {
-		s.session.Stats.LaunchesByType[connType]++
-		s.session.Stats.TotalLaunches++
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.session == nil {
+		return
 	}
+	s.session.Events = append(s.session.Events, domain.AnalyticsEvent{
+		Type:      "connection_launch",
+		Timestamp: time.Now().UTC(),
+		Data:      map[string]any{"type": connType},
+	})
+	s.session.Stats.LaunchesByType[connType]++
+	s.session.Stats.TotalLaunches++
 }
 
 func (s *Service) TrackError(errMsg string) {
-	s.TrackEvent("error", map[string]any{"message": errMsg})
-	if s.session != nil {
-		s.session.Stats.Errors = append(s.session.Stats.Errors, errMsg)
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.session == nil {
+		return
 	}
+	s.session.Events = append(s.session.Events, domain.AnalyticsEvent{
+		Type:      "error",
+		Timestamp: time.Now().UTC(),
+		Data:      map[string]any{"message": errMsg},
+	})
+	s.session.Stats.Errors = append(s.session.Stats.Errors, errMsg)
 }
 
 func (s *Service) saveSession() {

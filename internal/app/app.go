@@ -57,7 +57,7 @@ func (a *App) Startup(ctx context.Context) {
 		if updates, ok := settings["updates"].(map[string]any); ok {
 			if autoCheck, ok := updates["autoCheck"].(bool); ok && autoCheck {
 				useGithub := false
-				internalURL := "http://10.230.121.212"
+				internalURL := config.DefaultInternalURL
 				if v, ok := updates["useGithub"].(bool); ok {
 					useGithub = v
 				}
@@ -158,7 +158,7 @@ func (a *App) CheckForUpdates() domain.Result[map[string]any] {
 			useGithub = v
 		}
 	}
-	internalServerURL := "http://10.230.121.212"
+	internalServerURL := config.DefaultInternalURL
 	if updates, ok := settings["updates"].(map[string]any); ok {
 		if v, ok := updates["internalServerUrl"].(string); ok && v != "" {
 			internalServerURL = v

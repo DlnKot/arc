@@ -110,7 +110,20 @@ func validateHostOrURL(raw string) (string, error) {
 	if strings.ContainsAny(trimmed, "\n\r;$|`") {
 		return "", errors.New("host contains invalid characters")
 	}
-	return trimmed, nil
+	host := stripHostPrefix(trimmed)
+	return host, nil
+}
+
+func stripHostPrefix(raw string) string {
+	trimmed := strings.TrimSpace(raw)
+	lower := strings.ToLower(trimmed)
+	prefixes := []string{"rdp://", "https://", "http://", "mstsc://"}
+	for _, prefix := range prefixes {
+		if strings.HasPrefix(lower, prefix) {
+			return trimmed[len(prefix):]
+		}
+	}
+	return trimmed
 }
 
 func validateUsername(raw string) (string, error) {

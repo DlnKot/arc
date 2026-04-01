@@ -207,7 +207,7 @@ func checkGitHubUpdates(currentVersion string) (string, string, error) {
 
 func checkInternalUpdates(currentVersion string, serverURL string) (string, string, error) {
 	if serverURL == "" {
-		serverURL = "http://10.230.121.212"
+		serverURL = config.DefaultInternalURL
 	}
 
 	url := strings.TrimRight(serverURL, "/") + "/update.json"
